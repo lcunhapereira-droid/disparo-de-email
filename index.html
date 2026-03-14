@@ -3,38 +3,59 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Studio Luminous</title>
+    <title>Lumina Social | Gerenciador de Redes Sociais</title>
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#1A1A1A" />
+    <meta name="theme-color" content="#0F1117" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              'serif': ['Cormorant Garamond', 'serif'],
-              'sans': ['Poppins', 'sans-serif'],
+              'heading': ['Space Grotesk', 'sans-serif'],
+              'sans': ['Inter', 'sans-serif'],
             },
             colors: {
-              'brand-gold': '#C0A062',
-              'brand-dark': '#1A1A1A',
-              'brand-light': '#FDFBF6',
-              'brand-gray': '#EAEAEA',
+              'app-bg': '#0F1117',
+              'app-card': '#1A1D27',
+              'app-card2': '#1E2235',
+              'app-border': '#2D3148',
+              'app-border2': '#363A5C',
+              'app-muted': '#6B7280',
+              'app-text': '#E2E8F0',
+              'app-text2': '#94A3B8',
+              'accent': '#6366F1',
+              'accent-hover': '#4F52D9',
+              'accent-light': '#818CF8',
+              'success': '#10B981',
+              'warning': '#F59E0B',
+              'danger': '#EF4444',
+              'instagram': '#E1306C',
+              'tiktok': '#69C9D0',
+              'youtube': '#FF0000',
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.3s ease-in-out',
+              'slide-up': 'slideUp 0.3s ease-out',
+            },
+            keyframes: {
+              fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+              slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
             },
           }
         }
       }
     </script>
     <style>
-      body {
-        font-family: 'Poppins', sans-serif;
-      }
-      h1, h2, h3, h4, h5, h6 {
-        font-family: 'Cormorant Garamond', serif;
-      }
+      body { font-family: 'Inter', sans-serif; background-color: #0F1117; }
+      h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #1A1D27; }
+      ::-webkit-scrollbar-thumb { background: #2D3148; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: #363A5C; }
     </style>
   <script type="importmap">
 {
@@ -49,19 +70,8 @@
 }
 </script>
 </head>
-  <body class="bg-brand-dark text-brand-light">
+  <body class="bg-app-bg text-app-text">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          }, err => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-        });
-      }
-    </script>
   </body>
 </html>
