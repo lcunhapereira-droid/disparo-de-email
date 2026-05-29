@@ -25,8 +25,6 @@ interface FormData {
   area: Area;
   areaCustom: string;
   feedsCustom: string;
-  geminiKey: string;
-  resendKey: string;
   repoName: string;
 }
 
@@ -109,8 +107,6 @@ export default function ProvisionarPage() {
     area: "tecnologia",
     areaCustom: "",
     feedsCustom: "",
-    geminiKey: "",
-    resendKey: "",
     repoName: "",
   });
 
@@ -187,31 +183,26 @@ export default function ProvisionarPage() {
         <div style={{ maxWidth: 560, width: "100%", padding: "40px 20px", boxSizing: "border-box" }}>
           <div style={{ background: "#0a0a0a", border: "1px solid #C9A462", borderRadius: 4, padding: 28 }}>
             <div style={{ color: "#C9A462", fontSize: 10, letterSpacing: 4, marginBottom: 20 }}>DADOS DO AGENTE</div>
-
             <div style={{ marginBottom: 18 }}>
               <div style={{ color: "#555", fontSize: 11, marginBottom: 4 }}>REPOSITÓRIO GITHUB</div>
               <a href={success.repoUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#C9A462", fontSize: 13, wordBreak: "break-all" }}>{success.repoUrl}</a>
             </div>
-
             <div style={{ marginBottom: 18 }}>
               <div style={{ color: "#555", fontSize: 11, marginBottom: 4 }}>URL DO APP (disponível após ~2 min)</div>
               <a href={success.appUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#C9A462", fontSize: 13, wordBreak: "break-all" }}>{success.appUrl}</a>
             </div>
-
             <div style={{ marginBottom: 18 }}>
               <div style={{ color: "#555", fontSize: 11, marginBottom: 4 }}>URL DE TESTE DO EMAIL</div>
               <a href={success.testUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#C9A462", fontSize: 13, wordBreak: "break-all" }}>{success.testUrl}</a>
             </div>
-
             <div style={{ background: "#111", border: "1px solid #333", borderRadius: 3, padding: 16, marginTop: 8 }}>
               <div style={{ color: "#C9A462", fontSize: 10, letterSpacing: 3, marginBottom: 8 }}>CRON_SECRET — SALVE AGORA</div>
               <div style={{ color: "#fff", fontSize: 13, fontFamily: "monospace", wordBreak: "break-all" }}>{success.cronSecret}</div>
               <div style={{ color: "#555", fontSize: 11, marginTop: 8 }}>Guarde este valor. É necessário para testar o envio manualmente.</div>
             </div>
           </div>
-
           <div style={{ textAlign: "center", marginTop: 24 }}>
-            <a href="/provisionar" style={{ color: "#C9A462", fontSize: 12, letterSpacing: 2, textDecoration: "none" }}>← CRIAR OUTRO AGENTE</a>
+            <a href="/provisionar" style={{ color: "#C9A462", fontSize: 12, letterSpacing: 2, textDecoration: "none" }}>&larr; CRIAR OUTRO AGENTE</a>
           </div>
         </div>
       </main>
@@ -237,15 +228,15 @@ export default function ProvisionarPage() {
           <div style={sectionTitleStyle}>DADOS DO DESTINATÁRIO</div>
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>NOME COMPLETO *</label>
-            <input style={inputStyle} required value={form.nomeDestinatario} onChange={(e) => set("nomeDestinatario", e.target.value)} placeholder="Ex: Dra. Maria Silva" />
+            <input style={inputStyle} required value={form.nomeDestinatario} onChange={(e) => set("nomeDestinatario", e.target.value)} placeholder="Ex: Dr. João Silva" />
           </div>
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>DESCRIÇÃO PROFISSIONAL *</label>
-            <input style={inputStyle} required value={form.descricaoProfissional} onChange={(e) => set("descricaoProfissional", e.target.value)} placeholder="Ex: Médica especialista em cardiologia" />
+            <label style={labelStyle}>ÁREA OU PROFISSÃO *</label>
+            <input style={inputStyle} required value={form.descricaoProfissional} onChange={(e) => set("descricaoProfissional", e.target.value)} placeholder="Ex: Médico cardiologista" />
           </div>
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>IDENTIFICAÇÃO (opcional)</label>
-            <input style={inputStyle} value={form.identificacao} onChange={(e) => set("identificacao", e.target.value)} placeholder="Ex: CRM SP 12345, OAB/RJ 67890" />
+            <input style={inputStyle} value={form.identificacao} onChange={(e) => set("identificacao", e.target.value)} placeholder="Ex: CRM SP 12345" />
           </div>
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>LOCALIDADE *</label>
@@ -296,21 +287,6 @@ export default function ProvisionarPage() {
               </div>
             </>
           )}
-        </div>
-
-        <div style={sectionStyle}>
-          <div style={sectionTitleStyle}>CHAVES DE API</div>
-          <div style={{ background: "#0d0900", border: "1px solid #3a2f00", borderRadius: 3, padding: "10px 14px", marginBottom: 16 }}>
-            <div style={{ color: "#C9A462", fontSize: 11 }}>⚠ Estas chaves são enviadas de forma segura e nunca armazenadas pelo sistema.</div>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>GEMINI_API_KEY *</label>
-            <input style={inputStyle} required value={form.geminiKey} onChange={(e) => set("geminiKey", e.target.value)} placeholder="AIza..." type="password" autoComplete="off" />
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>RESEND_API_KEY *</label>
-            <input style={inputStyle} required value={form.resendKey} onChange={(e) => set("resendKey", e.target.value)} placeholder="re_..." type="password" autoComplete="off" />
-          </div>
         </div>
 
         <div style={sectionStyle}>

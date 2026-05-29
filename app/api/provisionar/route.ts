@@ -291,23 +291,24 @@ async function createBlob(owner: string, repo: string, content: string, token: s
 export async function POST(request: NextRequest) {
   const githubToken = process.env.GITHUB_TOKEN;
   const vercelToken = process.env.VERCEL_TOKEN;
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const resendKey = process.env.RESEND_API_KEY;
 
-  if (!githubToken || !vercelToken) {
-    return NextResponse.json({ error: "GITHUB_TOKEN ou VERCEL_TOKEN não configurados." }, { status: 500 });
+  if (!githubToken || !vercelToken || !geminiKey || !resendKey) {
+    return NextResponse.json({ error: "Variáveis de ambiente da Vértice não configuradas (GITHUB_TOKEN, VERCEL_TOKEN, GEMINI_API_KEY, RESEND_API_KEY)." }, { status: 500 });
   }
 
   let body: {
     nomeDestinatario: string; descricaoProfissional: string; identificacao: string;
     localidade: string; emailDestinatario: string; assunto: string; horario: number;
-    area: string; areaCustom: string; feedsCustom: string;
-    geminiKey: string; resendKey: string; repoName: string;
+    area: string; areaCustom: string; feedsCustom: string; repoName: string;
   };
 
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: "Body inválido" }, { status: 400 }); }
 
-  const { repoName, nomeDestinatario, geminiKey, resendKey } = body;
-  if (!repoName || !nomeDestinatario || !geminiKey || !resendKey) {
+  const { repoName, nomeDestinatario } = body;
+  if (!repoName || !nomeDestinatario) {
     return NextResponse.json({ error: "Campos obrigatórios faltando" }, { status: 400 });
   }
 
@@ -384,7 +385,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Erro Vercel: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
   }
 
-  // 4. Set env vars
+  // 4. Set env vars (Vertice's keys passed to each client project)
   await fetch(`https://api.vercel.com/v10/projects/${vercelProjectId}/env`, {
     method: "POST",
     headers: { Authorization: `Bearer ${vercelToken}`, "Content-Type": "application/json" },
