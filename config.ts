@@ -1,130 +1,150 @@
 // ============================================================
-//  CONFIGURACAO GERAL DO AGENTE DE CURADORIA MEDICA
+//  CONFIGURACAO GERAL DO AGENTE DE CURADORIA DE CONTEUDO
 //  Edite apenas este arquivo para personalizar o sistema.
+//  Funciona para qualquer area: medicina, tecnologia, direito,
+//  financas, marketing, programacao, etc.
 // ============================================================
 
 export const CONFIG = {
 
   // ----------------------------------------------------------
-  // IDENTIDADE DO MEDICO / PROFISSIONAL
+  // IDENTIDADE DO AGENTE
+  // Quem recebe a curadoria e qual o contexto profissional.
   // ----------------------------------------------------------
-  medico: {
-    nome: "Dra. Eriane Faria",
-    titulo: "Saude Feminina e Funcional",
-    registro: "CRM MG 100709",
-    cidade: "Belo Horizonte",
+  identidade: {
+    nomeDestinatario: "Dra. Eriane Faria",
+    descricaoProfissional: "Medica especialista em Saude Feminina e Funcional",
+    identificacao: "CRM MG 100709",       // CRM, OAB, registro, cargo — ou deixe vazio ""
+    localidade: "Belo Horizonte, Brasil",
+    tituloEmail: "CURADORIA CIENTIFICA",  // texto grande no topo do email
   },
 
   // ----------------------------------------------------------
-  // EMAIL DE DESTINO E REMETENTE
+  // EMAIL
   // ----------------------------------------------------------
   email: {
     destinatario: "erianefariadamasia@gmail.com",
-    assunto: "Curadoria Cientifica", // sera completado com a data automaticamente
-    remetente: "Curadoria Medica <onboarding@resend.dev>",
+    assunto: "Curadoria Diaria",           // completado automaticamente com a data
+    remetente: "Curadoria IA <onboarding@resend.dev>",
   },
 
   // ----------------------------------------------------------
-  // HORARIO DE ENVIO AUTOMATICO
-  // Formato cron UTC. Exemplos:
+  // HORARIO DE ENVIO AUTOMATICO (UTC)
+  // Exemplos:
   //   "0 23 * * *"  = 20h Brasilia (UTC-3)
-  //   "0 22 * * *"  = 19h Brasilia
-  //   "0 12 * * 1"  = toda segunda-feira ao meio-dia UTC
+  //   "0 12 * * *"  = 09h Brasilia
+  //   "0 14 * * 1"  = toda segunda-feira as 11h Brasilia
   // ----------------------------------------------------------
   cronSchedule: "0 23 * * *",
 
   // ----------------------------------------------------------
   // CORES E VISUAL DO EMAIL
+  // Use qualquer cor hex. Para encontrar cores: coolors.co
   // ----------------------------------------------------------
   visual: {
-    corPrimaria: "#9B8559",       // dourado - titulos e destaques
-    corSecundaria: "#b8a07a",     // dourado claro - gradiente
-    corFundo: "#F9F8F7",          // fundo geral
-    corBannerTexto: "#F6E6EA",    // texto do subtitulo no banner
-    corDataFundo: "#DDE8E2",      // fundo da data
-    corDataTexto: "#4a6741",      // texto da data
-    corRodape: "#1a1a1a",         // fundo do rodape
+    corPrimaria: "#9B8559",
+    corSecundaria: "#b8a07a",
+    corFundo: "#F9F8F7",
+    corBannerTexto: "#F6E6EA",
+    corDataFundo: "#DDE8E2",
+    corDataTexto: "#4a6741",
+    corRodape: "#1a1a1a",
   },
 
   // ----------------------------------------------------------
-  // ESPECIALIDADES E FEEDS RSS
-  // Adicione ou remova especialidades conforme necessario.
-  // Para encontrar feeds RSS de um site: acesse o site e
-  // procure pelo icone RSS ou adicione /rss ou /feed na URL.
+  // FONTES DE CONTEUDO (RSS feeds)
+  // Cole a URL do feed RSS de qualquer site.
+  // Para encontrar o RSS de um site, procure pelo icone RSS
+  // ou tente adicionar /feed, /rss, /feed.xml ao final da URL.
+  //
+  // Exemplos de areas:
+  //   Tecnologia: https://feeds.feedburner.com/TechCrunch
+  //   Programacao: https://dev.to/feed
+  //   IA: https://aiweekly.co/issues.rss
+  //   Financas: https://feeds.bloomberg.com/markets/news.rss
+  //   Direito: https://www.conjur.com.br/rss.xml
   // ----------------------------------------------------------
   feeds: [
     {
       url: "https://www.sciencedaily.com/rss/health_medicine/obesity.xml",
-      especialidade: "Endocrinologia",
+      categoria: "Endocrinologia",
       fonte: "ScienceDaily - Obesidade e Metabolismo",
     },
     {
       url: "https://www.sciencedaily.com/rss/health_medicine/menopause.xml",
-      especialidade: "Ginecologia",
+      categoria: "Ginecologia",
       fonte: "ScienceDaily - Menopausa e Climaterio",
     },
     {
       url: "https://www.sciencedaily.com/rss/health_medicine/skin_care.xml",
-      especialidade: "Dermatologia",
+      categoria: "Dermatologia",
       fonte: "ScienceDaily - Dermatologia",
     },
     {
       url: "https://www.nejm.org/action/showFeed?jc=nejm&type=etoc&feed=rss",
-      especialidade: "Medicina Geral",
+      categoria: "Geral",
       fonte: "New England Journal of Medicine",
     },
     {
       url: "https://www.bmj.com/rss/current.xml",
-      especialidade: "Medicina Geral",
+      categoria: "Geral",
       fonte: "British Medical Journal",
     },
     {
       url: "https://jamanetwork.com/rss/site_3/68.xml",
-      especialidade: "Dermatologia",
+      categoria: "Dermatologia",
       fonte: "JAMA Dermatology",
     },
     {
       url: "https://www.thelancet.com/rssfeed/lancet_online.xml",
-      especialidade: "Medicina Geral",
+      categoria: "Geral",
       fonte: "The Lancet",
     },
     {
       url: "https://www.thelancet.com/rssfeed/landef_online.xml",
-      especialidade: "Endocrinologia",
+      categoria: "Endocrinologia",
       fonte: "The Lancet Diabetes & Endocrinology",
     },
   ],
 
   // ----------------------------------------------------------
-  // SECOES DO EMAIL (agrupamento das especialidades acima)
-  // O Gemini vai organizar os artigos nestas secoes.
+  // SECOES DO EMAIL
+  // Como o conteudo sera agrupado no email.
+  // Adapte para sua area: pode ser tecnologias, praticas,
+  // subtemas, regioes, tipos de conteudo, etc.
   // ----------------------------------------------------------
   secoes: [
-    "ENDOCRINOLOGIA E METABOLISMO (emagrecimento, obesidade, diabetes, tireoide)",
+    "ENDOCRINOLOGIA E METABOLISMO",
     "GINECOLOGIA, SAUDE DA MULHER E MENOPAUSA",
     "DERMATOLOGIA ESTETICA",
   ],
 
   // ----------------------------------------------------------
-  // FILTRO DE QUALIDADE (instrucoes para o Gemini)
-  // Defina o que incluir e excluir da curadoria.
+  // FILTRO DE QUALIDADE
+  // Diga ao agente o que vale a pena incluir e o que ignorar.
+  // Adapte para sua area.
   // ----------------------------------------------------------
   filtro: {
     incluir: [
-      "Estudos clinicos randomizados (RCTs)",
+      "Estudos clinicos com resultados praticos",
       "Meta-analises e revisoes sistematicas",
-      "Estudos clinicos com resultados relevantes para pratica medica",
-      "Diretrizes e consensos de sociedades medicas",
-      "Pesquisas com impacto direto no manejo de pacientes",
+      "Novidades com impacto direto na atuacao profissional",
+      "Diretrizes e consensos de entidades reconhecidas",
     ],
     excluir: [
-      "Editoriais, cartas ao editor, opinoes",
-      "Noticias institucionais, eventos, congressos, chamadas de trabalhos",
-      "Obituarios, homenagens, premiacoes",
-      "Conteudo promocional ou comercial",
-      "Estudos apenas em animais ou in vitro sem aplicacao clinica clara",
-      "Qualquer conteudo sem relevancia clinica direta",
+      "Conteudo promocional ou publicitario",
+      "Eventos, congressos e chamadas de trabalhos",
+      "Opiniao sem embasamento tecnico",
+      "Conteudo repetido ou sem novidade relevante",
+      "Noticias institucionais sem aplicacao pratica",
     ],
   },
+
+  // ----------------------------------------------------------
+  // IDIOMA DE SAIDA
+  // O agente sempre entregara o resumo neste idioma,
+  // traduzindo automaticamente qualquer fonte estrangeira.
+  // ----------------------------------------------------------
+  idiomaSaida: "portugues brasileiro",
 
 };

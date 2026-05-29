@@ -5,13 +5,13 @@ import { parseStringPromise } from "xml2js";
 import { Resend } from "resend";
 import { CONFIG } from "../../../../config";
 
-type Noticia = { titulo: string; link: string; descricao: string; especialidade: string; fonte: string };
+type Noticia = { titulo: string; link: string; descricao: string; categoria: string; fonte: string };
 
 async function coletarNoticias(): Promise<Noticia[]> {
   const noticias: Noticia[] = [];
   for (const feed of CONFIG.feeds) {
     try {
-      const response = await axios.get(feed.url, { timeout: 15000, headers: { "User-Agent": "Mozilla/5.0 (compatible; AutomacaoMedica/1.0)" } });
+      const response = await axios.get(feed.url, { timeout: 15000, headers: { "User-Agent": "Mozilla/5.0 (compatible; CuradoriaIA/1.0)" } });
       const resultado = await parseStringPromise(response.data, { explicitArray: false });
       const itens = resultado?.rss?.channel?.item || [];
       const lista = Array.isArray(itens) ? itens : [itens];
@@ -20,7 +20,7 @@ async function coletarNoticias(): Promise<Noticia[]> {
         const link = String(item.link || item.guid || "").trim();
         const descricao = String(item.description || item.summary || "").replace(/<[^>]*>/g, "").trim().substring(0, 600);
         if (!link || !titulo) continue;
-        noticias.push({ titulo, link, descricao, especialidade: feed.especialidade, fonte: feed.fonte });
+        noticias.push({ titulo, link, descricao, categoria: feed.categoria, fonte: feed.fonte });
       }
     } catch { console.error(`Erro no feed ${feed.fonte}`); }
   }
@@ -29,26 +29,28 @@ async function coletarNoticias(): Promise<Noticia[]> {
 
 async function processarComGemini(noticias: Noticia[], apiKey: string): Promise<string> {
   const ai = new GoogleGenAI({ apiKey });
-  const { medico, secoes, filtro } = CONFIG;
+  const { identidade, secoes, filtro, idiomaSaida, visual } = CONFIG;
 
   const noticiasTexto = noticias.map((n, i) =>
-    `[${i + 1}] ESPECIALIDADE: ${n.especialidade}\nFONTE: ${n.fonte}\nTITULO: ${n.titulo}\nRESUMO: ${n.descricao}\nLINK: ${n.link}`
+    `[${i + 1}] CATEGORIA: ${n.categoria}\nFONTE: ${n.fonte}\nTITULO: ${n.titulo}\nRESUMO: ${n.descricao}\nLINK: ${n.link}`
   ).join("\n\n---\n\n");
 
   const secoesTexto = secoes.map((s, i) => `${i + 1}. ${s}`).join("\n");
   const incluirTexto = filtro.incluir.map(i => `- ${i}`).join("\n");
   const excluirTexto = filtro.excluir.map(e => `- ${e}`).join("\n");
+  const identificacao = identidade.identificacao ? ` (${identidade.identificacao})` : "";
 
-  const prompt = `Voce e uma curadora cientifica para ${medico.nome}, medica especialista em ${medico.titulo} (${medico.registro}), ${medico.cidade}.\n\nTAREFA: Analise os ${noticias.length} artigos abaixo e crie um RESUMO EXECUTIVO em HTML formatado e elegante.\n\nFILTRO RIGOROSO - INCLUA APENAS:\n${incluirTexto}\n\nEXCLUA COMPLETAMENTE:\n${excluirTexto}\n\nORGANIZACAO DO EMAIL (apenas as secoes abaixo):\n${secoesTexto}\n\nFORMATO DE CADA ARTIGO SELECIONADO:\n- Titulo traduzido para portugues brasileiro (em negrito)\n- Principais achados clinicos (2-3 linhas objetivas)\n- Relevancia pratica para a consulta\n- Nivel de evidencia (Ex: Meta-analise | Estudo Clinico | Revisao Sistematica)\n- Fonte: [nome da revista] com link clicavel\n\nUSE HTML limpo com style inline. Cor dos titulos de secao: ${CONFIG.visual.corPrimaria}, fundo de secao: #f5f0e8, texto: #333.\nSe nenhum artigo de uma secao passar no filtro, omita a secao.\nAo final inclua: "Total de artigos analisados: ${noticias.length}"\n\nARTIGOS PARA ANALISE:\n${noticiasTexto}\n\nRetorne APENAS o HTML do conteudo principal (sem html, head ou body tags).`;
+  const prompt = `Voce e um agente de curadoria de conteudo para ${identidade.nomeDestinatario}, ${identidade.descricaoProfissional}${identificacao}, ${identidade.localidade}.\n\nTAREFA: Analise os ${noticias.length} itens abaixo e crie um RESUMO EXECUTIVO em HTML formatado e elegante.\nTraduza todo o conteudo para ${idiomaSaida}.\n\nFILTRO DE QUALIDADE - INCLUA APENAS:\n${incluirTexto}\n\nEXCLUA COMPLETAMENTE:\n${excluirTexto}\n\nORGANIZACAO (use apenas as secoes abaixo):\n${secoesTexto}\n\nFORMATO DE CADA ITEM SELECIONADO:\n- Titulo em ${idiomaSaida} (em negrito)\n- Principais pontos (2-3 linhas objetivas)\n- Relevancia pratica para ${identidade.nomeDestinatario}\n- Fonte: [nome] com link clicavel\n\nUSE HTML limpo com style inline.\nCor dos titulos de secao: ${visual.corPrimaria}, fundo de secao: #f5f0e8, texto: #333.\nSe nenhum item de uma secao passar no filtro, omita a secao.\nAo final inclua: "Total de itens analisados: ${noticias.length}"\n\nCONTEUDO PARA ANALISE:\n${noticiasTexto}\n\nRetorne APENAS o HTML do conteudo principal (sem html, head ou body tags).`;
 
   const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
   return response.text || "<p>Nao foi possivel gerar o resumo.</p>";
 }
 
 function montarEmailHTML(conteudo: string): string {
-  const { medico, visual } = CONFIG;
+  const { identidade, visual } = CONFIG;
   const dataHoje = new Date().toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Sao_Paulo" });
-  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background-color:${visual.corFundo};font-family:Georgia,serif;">\n<div style="background:linear-gradient(135deg,${visual.corPrimaria},${visual.corSecundaria});padding:30px 40px;text-align:center;">\n  <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:2px;font-weight:normal;">CURADORIA CIENTIFICA</h1>\n  <p style="color:${visual.corBannerTexto};margin:8px 0 0;font-size:13px;">${medico.nome.toUpperCase()} - ${medico.titulo.toUpperCase()} - ${medico.registro}</p>\n</div>\n<div style="background:${visual.corDataFundo};padding:12px 40px;text-align:center;">\n  <p style="margin:0;color:${visual.corDataTexto};font-size:13px;">${dataHoje}</p>\n</div>\n<div style="max-width:700px;margin:0 auto;padding:40px 20px;">${conteudo}</div>\n<div style="background:${visual.corRodape};padding:25px 40px;text-align:center;margin-top:40px;">\n  <p style="color:${visual.corPrimaria};margin:0;font-size:12px;">RESUMO GERADO AUTOMATICAMENTE - GEMINI 2.5 FLASH</p>\n  <p style="color:#555;margin:8px 0 0;font-size:11px;">Uso pessoal e educativo. Fontes: ScienceDaily, NEJM, BMJ, JAMA, The Lancet.</p>\n</div></body></html>`;
+  const subtitulo = [identidade.nomeDestinatario, identidade.descricaoProfissional, identidade.identificacao].filter(Boolean).join(" — ");
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background-color:${visual.corFundo};font-family:Georgia,serif;">\n<div style="background:linear-gradient(135deg,${visual.corPrimaria},${visual.corSecundaria});padding:30px 40px;text-align:center;">\n  <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:2px;font-weight:normal;">${identidade.tituloEmail}</h1>\n  <p style="color:${visual.corBannerTexto};margin:8px 0 0;font-size:13px;">${subtitulo.toUpperCase()}</p>\n</div>\n<div style="background:${visual.corDataFundo};padding:12px 40px;text-align:center;">\n  <p style="margin:0;color:${visual.corDataTexto};font-size:13px;">${dataHoje}</p>\n</div>\n<div style="max-width:700px;margin:0 auto;padding:40px 20px;">${conteudo}</div>\n<div style="background:${visual.corRodape};padding:25px 40px;text-align:center;margin-top:40px;">\n  <p style="color:${visual.corPrimaria};margin:0;font-size:12px;">RESUMO GERADO AUTOMATICAMENTE — GEMINI 2.5 FLASH</p>\n  <p style="color:#555;margin:8px 0 0;font-size:11px;">Uso pessoal. Fontes configuradas em config.ts</p>\n</div></body></html>`;
 }
 
 export async function GET(request: NextRequest) {
