@@ -1,26 +1,37 @@
 export default function Home() {
   return (
-    <main style={{ fontFamily: "Georgia,serif", minHeight: "100vh", background: "#F9F8F7", display: "flex", flexDirection: "column" }}>
-      <div style={{ background: "linear-gradient(135deg,#1a3a5c,#2a5a8c)", padding: "40px 20px", textAlign: "center" }}>
-        <p style={{ color: "#a0c0e0", margin: "0 0 8px", fontSize: 12, letterSpacing: 3 }}>VÉRTICE CONSULTORIA ESTRATÉGICA</p>
-        <h1 style={{ color: "#fff", margin: "0 0 10px", fontSize: 26, fontWeight: "normal", letterSpacing: 2 }}>PLATAFORMA DE CURADORIA IA</h1>
-        <p style={{ color: "#c0d8f0", margin: 0, fontSize: 14 }}>Agentes inteligentes de monitoramento e síntese de conteúdo</p>
+    <main style={{ fontFamily: "'Georgia', serif", minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", alignItems: "center" }}>
+
+      <header style={{ width: "100%", background: "#000", padding: "48px 20px 40px", textAlign: "center", borderBottom: "1px solid #222" }}>
+        <svg width="72" height="62" viewBox="0 0 72 62" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginBottom: 20 }}>
+          <polygon points="36,2 70,60 2,60" fill="none" stroke="#C9A462" strokeWidth="2.5" />
+          <polygon points="36,18 58,58 14,58" fill="#000" />
+        </svg>
+        <div style={{ color: "#fff", fontSize: 32, letterSpacing: 12, fontWeight: 300, fontFamily: "Georgia, serif", marginBottom: 8 }}>VÉRTICE</div>
+        <div style={{ color: "#C9A462", fontSize: 11, letterSpacing: 6, fontWeight: 300 }}>CONSULTORIA ESTRATÉGICA</div>
+      </header>
+
+      <div style={{ textAlign: "center", padding: "48px 20px 32px" }}>
+        <h1 style={{ color: "#fff", fontSize: 18, fontWeight: "normal", letterSpacing: 3, margin: "0 0 12px" }}>PLATAFORMA DE CURADORIA IA</h1>
+        <p style={{ color: "#666", fontSize: 13, margin: 0, letterSpacing: 1 }}>Agentes inteligentes de monitoramento e síntese de conteúdo</p>
       </div>
 
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "50px 20px", display: "flex", flexDirection: "column", gap: 16, width: "100%", boxSizing: "border-box" }}>
-        <a href="/chat" style={{ display: "block", padding: "20px 28px", background: "linear-gradient(135deg,#1a3a5c,#2a5a8c)", color: "#fff", borderRadius: 12, textDecoration: "none", fontSize: 15, letterSpacing: 1 }}>
-          <div style={{ fontWeight: "bold", marginBottom: 4 }}>💬 ASSISTENTE IA</div>
-          <div style={{ fontSize: 13, color: "#c0d8f0" }}>Criar e configurar agentes conversando</div>
+      <div style={{ maxWidth: 560, width: "100%", padding: "0 20px 60px", display: "flex", flexDirection: "column", gap: 14, boxSizing: "border-box" }}>
+        <a href="/chat" style={{ display: "block", padding: "24px 28px", background: "#0a0a0a", border: "1px solid #C9A462", borderRadius: 4, textDecoration: "none" }}>
+          <div style={{ color: "#C9A462", fontSize: 11, letterSpacing: 4, marginBottom: 8 }}>ASSISTENTE IA</div>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: "normal" }}>Criar e configurar agentes conversando</div>
+          <div style={{ color: "#555", fontSize: 12, marginTop: 4 }}>Configure um novo agente em minutos</div>
         </a>
-        <a href="/setup" style={{ display: "block", padding: "20px 28px", background: "#fff", color: "#1a3a5c", border: "1px solid #ddd", borderRadius: 12, textDecoration: "none", fontSize: 15, letterSpacing: 1 }}>
-          <div style={{ fontWeight: "bold", marginBottom: 4 }}>⚙️ CONFIGURAÇÃO</div>
-          <div style={{ fontSize: 13, color: "#888" }}>Formulário completo de configuração</div>
+        <a href="/setup" style={{ display: "block", padding: "24px 28px", background: "#0a0a0a", border: "1px solid #333", borderRadius: 4, textDecoration: "none" }}>
+          <div style={{ color: "#C9A462", fontSize: 11, letterSpacing: 4, marginBottom: 8 }}>CONFIGURAÇÃO</div>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: "normal" }}>Formulário completo de configuração</div>
+          <div style={{ color: "#555", fontSize: 12, marginTop: 4 }}>Preencha os campos e gere o config.ts</div>
         </a>
       </div>
 
-      <div style={{ textAlign: "center", padding: "20px", marginTop: "auto" }}>
-        <p style={{ color: "#bbb", fontSize: 11, margin: 0 }}>© Vértice Consultoria Estratégica · Sistema proprietário</p>
-      </div>
+      <footer style={{ marginTop: "auto", borderTop: "1px solid #111", width: "100%", padding: "20px", textAlign: "center" }}>
+        <p style={{ color: "#333", fontSize: 11, margin: 0, letterSpacing: 2 }}>© VÉRTICE CONSULTORIA ESTRATÉGICA</p>
+      </footer>
     </main>
   );
 }
