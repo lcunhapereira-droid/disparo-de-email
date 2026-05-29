@@ -17,7 +17,12 @@ export default function Home() {
       </div>
 
       <div style={{ maxWidth: 560, width: "100%", padding: "0 20px 60px", display: "flex", flexDirection: "column", gap: 14, boxSizing: "border-box" }}>
-        <a href="/chat" style={{ display: "block", padding: "24px 28px", background: "#0a0a0a", border: "1px solid #C9A462", borderRadius: 4, textDecoration: "none" }}>
+        <a href="/provisionar" style={{ display: "block", padding: "24px 28px", background: "#0d0900", border: "2px solid #C9A462", borderRadius: 4, textDecoration: "none" }}>
+          <div style={{ color: "#C9A462", fontSize: 11, letterSpacing: 4, marginBottom: 8 }}>NOVO AGENTE</div>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: "normal" }}>Provisionar agente para novo cliente</div>
+          <div style={{ color: "#555", fontSize: 12, marginTop: 4 }}>Cria repositório GitHub + deploy Vercel automaticamente</div>
+        </a>
+        <a href="/chat" style={{ display: "block", padding: "24px 28px", background: "#0a0a0a", border: "1px solid #333", borderRadius: 4, textDecoration: "none" }}>
           <div style={{ color: "#C9A462", fontSize: 11, letterSpacing: 4, marginBottom: 8 }}>ASSISTENTE IA</div>
           <div style={{ color: "#fff", fontSize: 14, fontWeight: "normal" }}>Criar e configurar agentes conversando</div>
           <div style={{ color: "#555", fontSize: 12, marginTop: 4 }}>Configure um novo agente em minutos</div>
