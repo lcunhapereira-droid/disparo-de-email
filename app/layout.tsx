@@ -1,4 +1,4 @@
-export const metadata = { title: "Curadoria Medica - Dra. Eriane Faria" };
+export const metadata = { title: "Vértice Consultoria Estratégica — Plataforma de Curadoria IA" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

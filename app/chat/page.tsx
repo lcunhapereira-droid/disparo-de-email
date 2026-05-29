@@ -48,8 +48,8 @@ function ConfigBlock({ json }: { json: string }) {
   return (
     <div style={{ background: "#1a1a1a", borderRadius: 8, margin: "12px 0", overflow: "hidden" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: "#2a2a2a" }}>
-        <span style={{ color: "#9B8559", fontSize: 12, fontFamily: "monospace" }}>config.ts gerado</span>
-        <button onClick={copiar} style={{ padding: "4px 14px", background: copiado ? "#2e7d5e" : "#9B8559", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 12, fontFamily: "Georgia,serif" }}>
+        <span style={{ color: "#a0c0e0", fontSize: 12, fontFamily: "monospace" }}>config.ts gerado</span>
+        <button onClick={copiar} style={{ padding: "4px 14px", background: copiado ? "#2e7d5e" : "#1a3a5c", color: "#fff", border: "none", borderRadius: 12, cursor: "pointer", fontSize: 12, fontFamily: "Georgia,serif" }}>
           {copiado ? "✓ Copiado!" : "Copiar config.ts"}
         </button>
       </div>
@@ -129,9 +129,10 @@ export default function ChatPage() {
 
   return (
     <main style={{ background: "#F9F8F7", minHeight: "100vh", fontFamily: "Georgia,serif", display: "flex", flexDirection: "column" }}>
-      <div style={{ background: "linear-gradient(135deg,#9B8559,#b8a07a)", padding: "20px 40px", textAlign: "center" }}>
-        <h1 style={{ color: "#fff", margin: 0, fontSize: 20, letterSpacing: 2, fontWeight: "normal" }}>ASSISTENTE DE CURADORIA</h1>
-        <p style={{ color: "#F6E6EA", margin: "6px 0 0", fontSize: 12 }}>Configure agentes de e-mail automático para qualquer área</p>
+      <div style={{ background: "linear-gradient(135deg,#1a3a5c,#2a5a8c)", padding: "20px 40px", textAlign: "center" }}>
+        <p style={{ color: "#a0c0e0", margin: "0 0 4px", fontSize: 11, letterSpacing: 3 }}>VÉRTICE CONSULTORIA ESTRATÉGICA</p>
+        <h1 style={{ color: "#fff", margin: 0, fontSize: 20, letterSpacing: 2, fontWeight: "normal" }}>ASSISTENTE IA</h1>
+        <p style={{ color: "#c0d8f0", margin: "6px 0 0", fontSize: 12 }}>Configure agentes de curadoria para qualquer área</p>
       </div>
 
       <div style={{ flex: 1, maxWidth: 720, width: "100%", margin: "0 auto", padding: "24px 20px", display: "flex", flexDirection: "column", gap: 16, boxSizing: "border-box" }}>
@@ -139,9 +140,9 @@ export default function ChatPage() {
         {!iniciado ? (
           <div style={{ textAlign: "center", marginTop: 60 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🤖</div>
-            <h2 style={{ color: "#9B8559", fontWeight: "normal", fontSize: 20, margin: "0 0 12px" }}>Assistente de Curadoria IA</h2>
+            <h2 style={{ color: "#1a3a5c", fontWeight: "normal", fontSize: 20, margin: "0 0 12px" }}>Assistente de Curadoria IA</h2>
             <p style={{ color: "#888", fontSize: 14, margin: "0 0 32px" }}>Crie e gerencie agentes de e-mail automático conversando comigo</p>
-            <button onClick={iniciar} style={{ padding: "14px 40px", background: "linear-gradient(135deg,#9B8559,#b8a07a)", color: "#fff", border: "none", borderRadius: 30, fontSize: 15, fontFamily: "Georgia,serif", cursor: "pointer", letterSpacing: 1 }}>
+            <button onClick={iniciar} style={{ padding: "14px 40px", background: "linear-gradient(135deg,#1a3a5c,#2a5a8c)", color: "#fff", border: "none", borderRadius: 30, fontSize: 15, fontFamily: "Georgia,serif", cursor: "pointer", letterSpacing: 1 }}>
               INICIAR CONVERSA
             </button>
           </div>
@@ -154,9 +155,9 @@ export default function ChatPage() {
                     maxWidth: "85%",
                     padding: "12px 16px",
                     borderRadius: m.role === "user" ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                    background: m.role === "user" ? "linear-gradient(135deg,#9B8559,#b8a07a)" : "#fff",
+                    background: m.role === "user" ? "linear-gradient(135deg,#1a3a5c,#2a5a8c)" : "#fff",
                     color: m.role === "user" ? "#fff" : "#333",
-                    border: m.role === "user" ? "none" : "1px solid #e8e2d8",
+                    border: m.role === "user" ? "none" : "1px solid #e0e8f0",
                     fontSize: 14,
                     lineHeight: 1.6,
                   }}>
@@ -166,7 +167,7 @@ export default function ChatPage() {
               ))}
               {loading && (
                 <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                  <div style={{ padding: "12px 20px", background: "#fff", border: "1px solid #e8e2d8", borderRadius: "18px 18px 18px 4px", color: "#aaa", fontSize: 14 }}>
+                  <div style={{ padding: "12px 20px", background: "#fff", border: "1px solid #e0e8f0", borderRadius: "18px 18px 18px 4px", color: "#aaa", fontSize: 14 }}>
                     digitando...
                   </div>
                 </div>
@@ -177,7 +178,7 @@ export default function ChatPage() {
             {messages.length <= 2 && !loading && (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {sugestoes.map(s => (
-                  <button key={s} onClick={() => setInput(s)} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #ddd", borderRadius: 20, cursor: "pointer", fontSize: 13, fontFamily: "Georgia,serif", color: "#9B8559" }}>
+                  <button key={s} onClick={() => setInput(s)} style={{ padding: "6px 14px", background: "#fff", border: "1px solid #c0d0e0", borderRadius: 20, cursor: "pointer", fontSize: 13, fontFamily: "Georgia,serif", color: "#1a3a5c" }}>
                     {s}
                   </button>
                 ))}
@@ -190,9 +191,9 @@ export default function ChatPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && !e.shiftKey && enviar()}
                 placeholder="Digite sua mensagem..."
-                style={{ flex: 1, padding: "12px 16px", border: "1px solid #ddd", borderRadius: 24, fontSize: 14, fontFamily: "Georgia,serif", outline: "none", background: "#fff" }}
+                style={{ flex: 1, padding: "12px 16px", border: "1px solid #c0d0e0", borderRadius: 24, fontSize: 14, fontFamily: "Georgia,serif", outline: "none", background: "#fff" }}
               />
-              <button onClick={enviar} disabled={loading || !input.trim()} style={{ padding: "12px 24px", background: input.trim() && !loading ? "linear-gradient(135deg,#9B8559,#b8a07a)" : "#ddd", color: "#fff", border: "none", borderRadius: 24, cursor: input.trim() && !loading ? "pointer" : "default", fontSize: 14, fontFamily: "Georgia,serif", transition: "background 0.2s" }}>
+              <button onClick={enviar} disabled={loading || !input.trim()} style={{ padding: "12px 24px", background: input.trim() && !loading ? "linear-gradient(135deg,#1a3a5c,#2a5a8c)" : "#ddd", color: "#fff", border: "none", borderRadius: 24, cursor: input.trim() && !loading ? "pointer" : "default", fontSize: 14, fontFamily: "Georgia,serif", transition: "background 0.2s" }}>
                 Enviar
               </button>
             </div>
