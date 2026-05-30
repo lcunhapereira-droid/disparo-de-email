@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { parseStringPromise } from "xml2js";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { CONFIG } from "../../../../config";
 
 type Noticia = { titulo: string; link: string; descricao: string; categoria: string; fonte: string };
@@ -61,22 +61,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const geminiKey = process.env.GEMINI_API_KEY;
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!geminiKey || !resendKey) {
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!geminiKey || !gmailUser || !gmailPass) {
     return NextResponse.json({ error: "Variaveis de ambiente nao configuradas" }, { status: 500 });
   }
   try {
     const noticias = await coletarNoticias();
     if (noticias.length === 0) return NextResponse.json({ message: "Nenhuma noticia encontrada nos feeds" });
     const conteudo = await processarComGemini(noticias, geminiKey);
-    const resend = new Resend(resendKey);
-    const { error } = await resend.emails.send({
-      from: CONFIG.email.remetente,
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: gmailUser, pass: gmailPass },
+    });
+    await transporter.sendMail({
+      from: `Curadoria IA <${gmailUser}>`,
       to: CONFIG.email.destinatario,
       subject: `${CONFIG.email.assunto} - ${new Date().toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
       html: montarEmailHTML(conteudo),
     });
-    if (error) return NextResponse.json({ error: "Falha ao enviar e-mail", detail: error }, { status: 500 });
     return NextResponse.json({ success: true, noticias: noticias.length });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

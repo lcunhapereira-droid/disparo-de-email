@@ -12,10 +12,11 @@
     "@google/genai": "^1.0.0",
     "axios": "^1.7.9",
     "xml2js": "^0.6.2",
-    "resend": "^3.2.0"
+    "nodemailer": "^6.9.14"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.14",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/xml2js": "^0.4.14",
