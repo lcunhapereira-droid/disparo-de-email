@@ -312,30 +312,7 @@ export async function POST(request: NextRequest) {
     { path: "app/api/cron/resumo/route.ts", content: buildCronRoute() },
   ];
 
-  // 1. Create GitHub repo
-  const { status: repoStatus, data: repoData } = await githubApi("/user/repos", "POST", {
-    name: repoName, private: false, auto_init: false,
-    description: "Agente de curadoria IA - Vértice Consultoria",
-  }, githubToken);
-
-  if (repoStatus === 422) return NextResponse.json({ error: `Repositório "${repoName}" já existe. Escolha outro nome.` }, { status: 422 });
-  if (repoStatus !== 201) return NextResponse.json({ error: `Falha ao criar repositório: ${JSON.stringify(repoData)}` }, { status: 500 });
-
-  const repoUrl = repoData.html_url as string;
-
-  // 2. Push files to GitHub
-  try {
-    const blobs = await Promise.all(files.map(async f => ({ path: f.path, sha: await createBlob(GITHUB_OWNER, repoName, f.content, githubToken) })));
-    const { data: treeData } = await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/trees`, "POST", { tree: blobs.map(b => ({ path: b.path, mode: "100644", type: "blob", sha: b.sha })) }, githubToken);
-    const { data: commitData } = await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/commits`, "POST", { message: "Initial commit — Agente de curadoria IA", tree: treeData.sha, parents: [] }, githubToken);
-    await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/refs`, "POST", { ref: "refs/heads/main", sha: commitData.sha }, githubToken);
-  } catch (err) {
-    await githubApi(`/repos/${GITHUB_OWNER}/${repoName}`, "DELETE", undefined, githubToken);
-    return NextResponse.json({ error: `Falha ao enviar arquivos ao GitHub: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
-  }
-
-  // 3. Create Vercel project (without GitHub link)
-  // First, try to delete any existing project with this name to avoid conflicts
+  // 1. Create Vercel project FIRST (before GitHub repo exists, so no auto-link happens)
   await fetch(`https://api.vercel.com/v9/projects/${repoName}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${vercelToken}` },
@@ -346,20 +323,39 @@ export async function POST(request: NextRequest) {
     const vercelRes = await fetch("https://api.vercel.com/v10/projects", {
       method: "POST",
       headers: { Authorization: `Bearer ${vercelToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ name: repoName, framework: "nextjs", installCommand: "npm install", buildCommand: "npm run build", outputDirectory: ".next" }),
+      body: JSON.stringify({ name: repoName, framework: "nextjs" }),
     });
     const vercelData = await vercelRes.json() as Record<string, unknown>;
     if (!vercelRes.ok) {
-      await githubApi(`/repos/${GITHUB_OWNER}/${repoName}`, "DELETE", undefined, githubToken);
       return NextResponse.json({ error: `Falha ao criar projeto Vercel: ${JSON.stringify(vercelData)}` }, { status: 500 });
     }
     vercelProjectId = vercelData.id as string;
   } catch (err) {
-    await githubApi(`/repos/${GITHUB_OWNER}/${repoName}`, "DELETE", undefined, githubToken);
     return NextResponse.json({ error: `Erro Vercel: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
   }
 
-  // 4. Set env vars
+  // 2. Create GitHub repo (after Vercel project exists — avoids auto-link)
+  const { status: repoStatus, data: repoData } = await githubApi("/user/repos", "POST", {
+    name: repoName, private: false, auto_init: false,
+    description: "Agente de curadoria IA - Vértice Consultoria",
+  }, githubToken);
+
+  if (repoStatus === 422) return NextResponse.json({ error: `Repositório "${repoName}" já existe. Escolha outro nome.` }, { status: 422 });
+  if (repoStatus !== 201) return NextResponse.json({ error: `Falha ao criar repositório: ${JSON.stringify(repoData)}` }, { status: 500 });
+
+  const repoUrl = repoData.html_url as string;
+
+  // 3. Push files to GitHub
+  try {
+    const blobs = await Promise.all(files.map(async f => ({ path: f.path, sha: await createBlob(GITHUB_OWNER, repoName, f.content, githubToken) })));
+    const { data: treeData } = await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/trees`, "POST", { tree: blobs.map(b => ({ path: b.path, mode: "100644", type: "blob", sha: b.sha })) }, githubToken);
+    const { data: commitData } = await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/commits`, "POST", { message: "Initial commit — Agente de curadoria IA", tree: treeData.sha, parents: [] }, githubToken);
+    await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/refs`, "POST", { ref: "refs/heads/main", sha: commitData.sha }, githubToken);
+  } catch (err) {
+    console.error("GitHub push error:", err);
+  }
+
+  // 4. Set env vars on Vercel project
   try {
     await fetch(`https://api.vercel.com/v10/projects/${vercelProjectId}/env`, {
       method: "POST",
