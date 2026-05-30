@@ -335,12 +335,18 @@ export async function POST(request: NextRequest) {
   }
 
   // 3. Create Vercel project (without GitHub link)
+  // First, try to delete any existing project with this name to avoid conflicts
+  await fetch(`https://api.vercel.com/v9/projects/${repoName}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${vercelToken}` },
+  });
+
   let vercelProjectId: string;
   try {
     const vercelRes = await fetch("https://api.vercel.com/v10/projects", {
       method: "POST",
       headers: { Authorization: `Bearer ${vercelToken}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ name: repoName, framework: "nextjs" }),
+      body: JSON.stringify({ name: repoName, framework: "nextjs", installCommand: "npm install", buildCommand: "npm run build", outputDirectory: ".next" }),
     });
     const vercelData = await vercelRes.json() as Record<string, unknown>;
     if (!vercelRes.ok) {
