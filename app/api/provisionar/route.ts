@@ -73,27 +73,46 @@ function getCronSchedule(horaBrasilia: number): string {
 }
 
 function buildConfig(data: {
-  nomeDestinatario: string; descricaoProfissional: string; identificacao: string;
-  localidade: string; emailDestinatario: string; assunto: string; horario: number;
-  area: string; areaCustom: string; feedsCustom: string;
+  nomeDestinatario: string;
+  descricaoProfissional: string;
+  identificacao: string;
+  localidade: string;
+  emailDestinatario: string;
+  assunto: string;
+  horario: number;
+  area: string;
+  areaCustom: string;
+  feedsCustom: string;
 }): string {
-  const feeds = data.area === "outro"
-    ? data.feedsCustom.split("\n").map((line) => {
-        const parts = line.split("|").map((p) => p.trim());
-        return parts.length >= 3 ? { url: parts[0], categoria: parts[1], fonte: parts[2] } : null;
-      }).filter(Boolean) as Feed[]
-    : (FEEDS_POR_AREA[data.area] || FEEDS_POR_AREA.tecnologia);
+  const feeds =
+    data.area === "outro"
+      ? data.feedsCustom
+          .split("\n")
+          .map((line) => {
+            const parts = line.split("|").map((p) => p.trim());
+            return parts.length >= 3
+              ? { url: parts[0], categoria: parts[1], fonte: parts[2] }
+              : null;
+          })
+          .filter(Boolean) as Feed[]
+      : FEEDS_POR_AREA[data.area] || FEEDS_POR_AREA.tecnologia;
 
-  const secoes = data.area === "outro"
-    ? ["PRINCIPAIS NOTÍCIAS", "TENDÊNCIAS", "ANÁLISES"]
-    : (SECOES_POR_AREA[data.area] || SECOES_POR_AREA.tecnologia);
+  const secoes =
+    data.area === "outro"
+      ? ["PRINCIPAIS NOTÍCIAS", "TENDÊNCIAS", "ANÁLISES"]
+      : SECOES_POR_AREA[data.area] || SECOES_POR_AREA.tecnologia;
 
   const cronSchedule = getCronSchedule(data.horario);
   const areaLabel = data.area === "outro" ? data.areaCustom : data.area;
-  const feedsStr = feeds.map((f) => `    { url: "${f.url}", categoria: "${f.categoria}", fonte: "${f.fonte}" },`).join("\n");
+
+  const feedsStr = feeds
+    .map((f) => `    { url: "${f.url}", categoria: "${f.categoria}", fonte: "${f.fonte}" },`)
+    .join("\n");
+
   const secoesStr = secoes.map((s) => `    "${s}",`).join("\n");
 
-  return `export const CONFIG = {
+  return `// Configuração gerada automaticamente por Vértice Consultoria Estratégica
+export const CONFIG = {
   identidade: {
     nomeDestinatario: "${data.nomeDestinatario}",
     descricaoProfissional: "${data.descricaoProfissional}",
@@ -108,11 +127,20 @@ function buildConfig(data: {
   },
   cronSchedule: "${cronSchedule}",
   visual: {
-    corPrimaria: "#9B8559", corSecundaria: "#b8a07a", corFundo: "#F9F8F7",
-    corBannerTexto: "#F6E6EA", corDataFundo: "#DDE8E2", corDataTexto: "#4a6741", corRodape: "#1a1a1a",
+    corPrimaria: "#9B8559",
+    corSecundaria: "#b8a07a",
+    corFundo: "#F9F8F7",
+    corBannerTexto: "#F6E6EA",
+    corDataFundo: "#DDE8E2",
+    corDataTexto: "#4a6741",
+    corRodape: "#1a1a1a",
   },
-  feeds: [\n${feedsStr}\n  ],
-  secoes: [\n${secoesStr}\n  ],
+  feeds: [
+${feedsStr}
+  ],
+  secoes: [
+${secoesStr}
+  ],
   filtro: {
     incluir: [
       "Análises e estudos com resultados concretos",
@@ -137,7 +165,7 @@ function buildCronRoute(): string {
 import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { parseStringPromise } from "xml2js";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { CONFIG } from "../../../../config";
 
 type Noticia = { titulo: string; link: string; descricao: string; categoria: string; fonte: string };
@@ -165,12 +193,14 @@ async function coletarNoticias(): Promise<Noticia[]> {
 async function processarComGemini(noticias: Noticia[], apiKey: string): Promise<string> {
   const ai = new GoogleGenAI({ apiKey });
   const { identidade, secoes, filtro, idiomaSaida, visual } = CONFIG;
-  const noticiasTexto = noticias.map((n, i) => \`[\${i + 1}] CATEGORIA: \${n.categoria}\\nFONTE: \${n.fonte}\\nTITULO: \${n.titulo}\\nRESUMO: \${n.descricao}\\nLINK: \${n.link}\`).join("\\n\\n---\\n\\n");
+  const noticiasTexto = noticias.map((n, i) =>
+    \`[\${i + 1}] CATEGORIA: \${n.categoria}\\nFONTE: \${n.fonte}\\nTITULO: \${n.titulo}\\nRESUMO: \${n.descricao}\\nLINK: \${n.link}\`
+  ).join("\\n\\n---\\n\\n");
   const secoesTexto = secoes.map((s, i) => \`\${i + 1}. \${s}\`).join("\\n");
   const incluirTexto = filtro.incluir.map(i => \`- \${i}\`).join("\\n");
   const excluirTexto = filtro.excluir.map(e => \`- \${e}\`).join("\\n");
   const identificacao = identidade.identificacao ? \` (\${identidade.identificacao})\` : "";
-  const prompt = \`Voce e um agente de curadoria para \${identidade.nomeDestinatario}, \${identidade.descricaoProfissional}\${identificacao}.\\n\\nTAREFA: Analise os \${noticias.length} itens e crie RESUMO EXECUTIVO em HTML.\\nTraduza para \${idiomaSaida}.\\n\\nINCLUA APENAS:\\n\${incluirTexto}\\n\\nEXCLUA:\\n\${excluirTexto}\\n\\nSECOES:\\n\${secoesTexto}\\n\\nUSE HTML com style inline. Cor titulos: \${visual.corPrimaria}.\\n\\nCONTEUDO:\\n\${noticiasTexto}\\n\\nRetorne APENAS o HTML do conteudo (sem html/head/body tags).\`;
+  const prompt = \`Voce e um agente de curadoria de conteudo para \${identidade.nomeDestinatario}, \${identidade.descricaoProfissional}\${identificacao}, \${identidade.localidade}.\\n\\nTAREFA: Analise os \${noticias.length} itens abaixo e crie um RESUMO EXECUTIVO em HTML formatado e elegante.\\nTraduza todo o conteudo para \${idiomaSaida}.\\n\\nFILTRO DE QUALIDADE - INCLUA APENAS:\\n\${incluirTexto}\\n\\nEXCLUA COMPLETAMENTE:\\n\${excluirTexto}\\n\\nORGANIZACAO (use apenas as secoes abaixo):\\n\${secoesTexto}\\n\\nFORMATO DE CADA ITEM SELECIONADO:\\n- Titulo em \${idiomaSaida} (em negrito)\\n- Principais pontos (2-3 linhas objetivas)\\n- Relevancia pratica para \${identidade.nomeDestinatario}\\n- Fonte: [nome] com link clicavel\\n\\nUSE HTML limpo com style inline.\\nCor dos titulos de secao: \${visual.corPrimaria}, fundo de secao: #f5f0e8, texto: #333.\\nSe nenhum item de uma secao passar no filtro, omita a secao.\\nAo final inclua: "Total de itens analisados: \${noticias.length}"\\n\\nCONTEUDO PARA ANALISE:\\n\${noticiasTexto}\\n\\nRetorne APENAS o HTML do conteudo principal (sem html, head ou body tags).\`;
   const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
   return response.text || "<p>Nao foi possivel gerar o resumo.</p>";
 }
@@ -179,7 +209,7 @@ function montarEmailHTML(conteudo: string): string {
   const { identidade, visual } = CONFIG;
   const dataHoje = new Date().toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Sao_Paulo" });
   const subtitulo = [identidade.nomeDestinatario, identidade.descricaoProfissional, identidade.identificacao].filter(Boolean).join(" — ");
-  return \`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head><body style="margin:0;background-color:\${visual.corFundo};font-family:Georgia,serif;"><div style="background:linear-gradient(135deg,\${visual.corPrimaria},\${visual.corSecundaria});padding:30px 40px;text-align:center;"><h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:2px;font-weight:normal;">\${identidade.tituloEmail}</h1><p style="color:\${visual.corBannerTexto};margin:8px 0 0;font-size:13px;">\${subtitulo.toUpperCase()}</p></div><div style="background:\${visual.corDataFundo};padding:12px 40px;text-align:center;"><p style="margin:0;color:\${visual.corDataTexto};font-size:13px;">\${dataHoje}</p></div><div style="max-width:700px;margin:0 auto;padding:40px 20px;">\${conteudo}</div><div style="background:\${visual.corRodape};padding:25px 40px;text-align:center;margin-top:40px;"><p style="color:\${visual.corPrimaria};margin:0;font-size:12px;">RESUMO GERADO AUTOMATICAMENTE — GEMINI 2.5 FLASH</p></div></body></html>\`;
+  return \`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background-color:\${visual.corFundo};font-family:Georgia,serif;">\\n<div style="background:linear-gradient(135deg,\${visual.corPrimaria},\${visual.corSecundaria});padding:30px 40px;text-align:center;">\\n  <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:2px;font-weight:normal;">\${identidade.tituloEmail}</h1>\\n  <p style="color:\${visual.corBannerTexto};margin:8px 0 0;font-size:13px;">\${subtitulo.toUpperCase()}</p>\\n</div>\\n<div style="background:\${visual.corDataFundo};padding:12px 40px;text-align:center;">\\n  <p style="margin:0;color:\${visual.corDataTexto};font-size:13px;">\${dataHoje}</p>\\n</div>\\n<div style="max-width:700px;margin:0 auto;padding:40px 20px;">\${conteudo}</div>\\n<div style="background:\${visual.corRodape};padding:25px 40px;text-align:center;margin-top:40px;">\\n  <p style="color:\${visual.corPrimaria};margin:0;font-size:12px;">RESUMO GERADO AUTOMATICAMENTE — GEMINI 2.5 FLASH</p>\\n  <p style="color:#555;margin:8px 0 0;font-size:11px;">Uso pessoal. Fontes configuradas em config.ts</p>\\n</div></body></html>\`;
 }
 
 export async function GET(request: NextRequest) {
@@ -190,23 +220,29 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const geminiKey = process.env.GEMINI_API_KEY;
-  const resendKey = process.env.RESEND_API_KEY;
-  if (!geminiKey || !resendKey) return NextResponse.json({ error: "Variaveis de ambiente nao configuradas" }, { status: 500 });
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!geminiKey || !gmailUser || !gmailPass) {
+    return NextResponse.json({ error: "Variaveis de ambiente nao configuradas" }, { status: 500 });
+  }
   try {
     const noticias = await coletarNoticias();
-    if (noticias.length === 0) return NextResponse.json({ message: "Nenhuma noticia encontrada" });
+    if (noticias.length === 0) return NextResponse.json({ message: "Nenhuma noticia encontrada nos feeds" });
     const conteudo = await processarComGemini(noticias, geminiKey);
-    const resend = new Resend(resendKey);
-    const { error } = await resend.emails.send({
-      from: CONFIG.email.remetente,
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: gmailUser, pass: gmailPass },
+    });
+    await transporter.sendMail({
+      from: \`Curadoria IA <\${gmailUser}>\`,
       to: CONFIG.email.destinatario,
       subject: \`\${CONFIG.email.assunto} - \${new Date().toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}\`,
       html: montarEmailHTML(conteudo),
     });
-    if (error) return NextResponse.json({ error: "Falha ao enviar e-mail", detail: error }, { status: 500 });
     return NextResponse.json({ success: true, noticias: noticias.length });
   } catch (err) {
-    return NextResponse.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
 `;
@@ -236,7 +272,7 @@ function buildLayoutTsx(tituloEmail: string): string {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body style={{ margin: 0, background: "#000" }}>{children}</body>
+      <body style={{ margin: 0, padding: 0, background: "#000" }}>{children}</body>
     </html>
   );
 }
@@ -244,28 +280,86 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 
 function buildPackageJson(repoName: string): string {
-  return JSON.stringify({
-    name: repoName, version: "1.0.0", private: true,
-    scripts: { dev: "next dev", build: "next build", start: "next start" },
-    dependencies: { next: "^14.2.0", "@google/genai": "^1.0.0", axios: "^1.7.9", xml2js: "^0.6.2", resend: "^3.2.0" },
-    devDependencies: { "@types/node": "^20.0.0", "@types/react": "^18.0.0", "@types/react-dom": "^18.0.0", "@types/xml2js": "^0.4.14", typescript: "^5.0.0" },
-  }, null, 2);
+  return JSON.stringify(
+    {
+      name: repoName,
+      version: "1.0.0",
+      private: true,
+      scripts: { dev: "next dev", build: "next build", start: "next start" },
+      dependencies: {
+        next: "^14.2.0",
+        "@google/genai": "^1.0.0",
+        axios: "^1.7.9",
+        xml2js: "^0.6.2",
+        nodemailer: "^6.9.14",
+      },
+      devDependencies: {
+        "@types/node": "^20.0.0",
+        "@types/nodemailer": "^6.4.14",
+        "@types/react": "^18.0.0",
+        "@types/react-dom": "^18.0.0",
+        "@types/xml2js": "^0.4.14",
+        typescript: "^5.0.0",
+      },
+    },
+    null,
+    2
+  );
 }
 
-const TSCONFIG = JSON.stringify({
-  compilerOptions: {
-    target: "ES2017", lib: ["dom", "dom.iterable", "esnext"], allowJs: true, skipLibCheck: true,
-    strict: true, noEmit: true, esModuleInterop: true, module: "esnext", moduleResolution: "bundler",
-    resolveJsonModule: true, isolatedModules: true, jsx: "preserve", incremental: true,
-    plugins: [{ name: "next" }], paths: { "@/*": ["./*"] },
-  },
-  include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  exclude: ["node_modules"],
-}, null, 2);
+function buildTsconfig(): string {
+  return JSON.stringify(
+    {
+      compilerOptions: {
+        target: "ES2017",
+        lib: ["dom", "dom.iterable", "esnext"],
+        allowJs: true,
+        skipLibCheck: true,
+        strict: true,
+        noEmit: true,
+        esModuleInterop: true,
+        module: "esnext",
+        moduleResolution: "bundler",
+        resolveJsonModule: true,
+        isolatedModules: true,
+        jsx: "preserve",
+        incremental: true,
+        plugins: [{ name: "next" }],
+        paths: { "@/*": ["./*"] },
+      },
+      include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+      exclude: ["node_modules"],
+    },
+    null,
+    2
+  );
+}
 
-const GITIGNORE = `.next\nnode_modules\n.env.local\n.env\n`;
+function buildVercelJson(cronSchedule: string): string {
+  return JSON.stringify(
+    {
+      framework: "nextjs",
+      crons: [{ path: "/api/cron/resumo", schedule: cronSchedule }],
+    },
+    null,
+    2
+  );
+}
 
-async function githubApi(path: string, method: string, body: unknown, token: string) {
+const GITIGNORE = `# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+.next
+node_modules
+.env.local
+.env
+*.env
+`;
+
+async function githubApi(
+  path: string,
+  method: string,
+  body: unknown,
+  token: string
+): Promise<{ status: number; data: Record<string, unknown> }> {
   const res = await fetch(`https://api.github.com${path}`, {
     method,
     headers: {
@@ -276,15 +370,22 @@ async function githubApi(path: string, method: string, body: unknown, token: str
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json();
+  const data = (await res.json()) as Record<string, unknown>;
   return { status: res.status, data };
 }
 
-async function createBlob(owner: string, repo: string, content: string, token: string): Promise<string> {
-  const { data } = await githubApi(`/repos/${owner}/${repo}/git/blobs`, "POST", {
-    content: Buffer.from(content).toString("base64"),
-    encoding: "base64",
-  }, token);
+async function createBlob(
+  owner: string,
+  repo: string,
+  content: string,
+  token: string
+): Promise<string> {
+  const { data } = await githubApi(
+    `/repos/${owner}/${repo}/git/blobs`,
+    "POST",
+    { content: Buffer.from(content).toString("base64"), encoding: "base64" },
+    token
+  );
   return data.sha as string;
 }
 
@@ -292,47 +393,81 @@ export async function POST(request: NextRequest) {
   const githubToken = process.env.GITHUB_TOKEN;
   const vercelToken = process.env.VERCEL_TOKEN;
   const geminiKey = process.env.GEMINI_API_KEY;
-  const resendKey = process.env.RESEND_API_KEY;
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
-  if (!githubToken || !vercelToken || !geminiKey || !resendKey) {
-    return NextResponse.json({ error: "Variáveis de ambiente da Vértice não configuradas (GITHUB_TOKEN, VERCEL_TOKEN, GEMINI_API_KEY, RESEND_API_KEY)." }, { status: 500 });
+  if (!githubToken || !vercelToken || !geminiKey || !gmailUser || !gmailPass) {
+    return NextResponse.json(
+      { error: "Variáveis de ambiente não configuradas no servidor." },
+      { status: 500 }
+    );
   }
 
   let body: {
-    nomeDestinatario: string; descricaoProfissional: string; identificacao: string;
-    localidade: string; emailDestinatario: string; assunto: string; horario: number;
-    area: string; areaCustom: string; feedsCustom: string; repoName: string;
+    nomeDestinatario: string;
+    descricaoProfissional: string;
+    identificacao: string;
+    localidade: string;
+    emailDestinatario: string;
+    assunto: string;
+    horario: number;
+    area: string;
+    areaCustom: string;
+    feedsCustom: string;
+    repoName: string;
   };
 
-  try { body = await request.json(); }
-  catch { return NextResponse.json({ error: "Body inválido" }, { status: 400 }); }
+  try {
+    body = (await request.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
+  }
 
   const { repoName, nomeDestinatario } = body;
+
   if (!repoName || !nomeDestinatario) {
     return NextResponse.json({ error: "Campos obrigatórios faltando" }, { status: 400 });
   }
 
   const cronSecret = crypto.randomUUID().replace(/-/g, "");
+  const cronSchedule = getCronSchedule(body.horario || 20);
   const areaLabel = body.area === "outro" ? body.areaCustom : body.area;
   const tituloEmail = `CURADORIA ${areaLabel.toUpperCase()}`;
 
-  // 1. Create GitHub repo
-  const { status: repoStatus, data: repoData } = await githubApi("/user/repos", "POST", {
-    name: repoName, private: true, auto_init: false,
-    description: "Agente de curadoria IA - Vértice Consultoria",
-  }, githubToken);
+  // 1. Create GitHub repo (public for Vercel Hobby compatibility)
+  const { status: repoStatus, data: repoData } = await githubApi(
+    "/user/repos",
+    "POST",
+    {
+      name: repoName,
+      private: false,
+      auto_init: false,
+      description: "Agente de curadoria IA - Vértice Consultoria",
+    },
+    githubToken
+  );
 
-  if (repoStatus === 422) return NextResponse.json({ error: `Repositório "${repoName}" já existe. Escolha outro nome.` }, { status: 422 });
-  if (repoStatus !== 201) return NextResponse.json({ error: `Falha ao criar repositório: ${JSON.stringify(repoData)}` }, { status: 500 });
+  if (repoStatus === 422) {
+    return NextResponse.json(
+      { error: `Repositório "${repoName}" já existe. Escolha outro nome.` },
+      { status: 422 }
+    );
+  }
+  if (repoStatus !== 201) {
+    return NextResponse.json(
+      { error: `Falha ao criar repositório GitHub: ${JSON.stringify(repoData)}` },
+      { status: 500 }
+    );
+  }
 
   const repoUrl = repoData.html_url as string;
 
-  // 2. Push files via Git Data API
+  // 2. Push all files via Git Data API
   try {
-    const files = [
+    const files: Array<{ path: string; content: string }> = [
       { path: "package.json", content: buildPackageJson(repoName) },
-      { path: "tsconfig.json", content: TSCONFIG },
-      { path: "vercel.json", content: JSON.stringify({ framework: "nextjs", crons: [{ path: "/api/cron/resumo", schedule: getCronSchedule(body.horario) }] }, null, 2) },
+      { path: "tsconfig.json", content: buildTsconfig() },
+      { path: "vercel.json", content: buildVercelJson(cronSchedule) },
       { path: ".gitignore", content: GITIGNORE },
       { path: "config.ts", content: buildConfig(body) },
       { path: "app/layout.tsx", content: buildLayoutTsx(tituloEmail) },
@@ -341,64 +476,104 @@ export async function POST(request: NextRequest) {
     ];
 
     const blobs = await Promise.all(
-      files.map(async (f) => ({ path: f.path, sha: await createBlob(GITHUB_OWNER, repoName, f.content, githubToken) }))
+      files.map(async (f) => ({
+        path: f.path,
+        sha: await createBlob(GITHUB_OWNER, repoName, f.content, githubToken),
+      }))
     );
 
-    const { data: treeData } = await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/trees`, "POST", {
-      tree: blobs.map((b) => ({ path: b.path, mode: "100644", type: "blob", sha: b.sha })),
-    }, githubToken);
+    const { data: treeData } = await githubApi(
+      `/repos/${GITHUB_OWNER}/${repoName}/git/trees`,
+      "POST",
+      { tree: blobs.map((b) => ({ path: b.path, mode: "100644", type: "blob", sha: b.sha })) },
+      githubToken
+    );
 
-    const { data: commitData } = await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/commits`, "POST", {
-      message: "Initial commit — Agente de curadoria IA",
-      tree: treeData.sha, parents: [],
-    }, githubToken);
+    const { data: commitData } = await githubApi(
+      `/repos/${GITHUB_OWNER}/${repoName}/git/commits`,
+      "POST",
+      { message: "Initial commit — Agente de curadoria IA", tree: treeData.sha, parents: [] },
+      githubToken
+    );
 
-    await githubApi(`/repos/${GITHUB_OWNER}/${repoName}/git/refs`, "POST", {
-      ref: "refs/heads/main", sha: commitData.sha,
-    }, githubToken);
+    await githubApi(
+      `/repos/${GITHUB_OWNER}/${repoName}/git/refs`,
+      "POST",
+      { ref: "refs/heads/main", sha: commitData.sha },
+      githubToken
+    );
   } catch (err) {
     await githubApi(`/repos/${GITHUB_OWNER}/${repoName}`, "DELETE", undefined, githubToken);
-    return NextResponse.json({ error: `Falha ao enviar arquivos: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
+    return NextResponse.json(
+      { error: `Falha ao enviar arquivos: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 }
+    );
   }
 
   // 3. Create Vercel project
   let vercelProjectId: string;
-  const appUrl = `https://${repoName}.vercel.app`;
+  let appUrl: string;
 
   try {
     const vercelRes = await fetch("https://api.vercel.com/v10/projects", {
       method: "POST",
-      headers: { Authorization: `Bearer ${vercelToken}`, "Content-Type": "application/json" },
+      headers: {
+        Authorization: `Bearer ${vercelToken}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        name: repoName, framework: "nextjs",
+        name: repoName,
+        framework: "nextjs",
         gitRepository: { type: "github", repo: `${GITHUB_OWNER}/${repoName}` },
       }),
     });
-    const vercelData = await vercelRes.json();
+    const vercelData = (await vercelRes.json()) as Record<string, unknown>;
     if (!vercelRes.ok) {
       await githubApi(`/repos/${GITHUB_OWNER}/${repoName}`, "DELETE", undefined, githubToken);
-      return NextResponse.json({ error: `Falha ao criar projeto Vercel: ${JSON.stringify(vercelData)}` }, { status: 500 });
+      return NextResponse.json(
+        { error: `Falha ao criar projeto Vercel: ${JSON.stringify(vercelData)}` },
+        { status: 500 }
+      );
     }
     vercelProjectId = vercelData.id as string;
+    appUrl = `https://${repoName}.vercel.app`;
   } catch (err) {
     await githubApi(`/repos/${GITHUB_OWNER}/${repoName}`, "DELETE", undefined, githubToken);
-    return NextResponse.json({ error: `Erro Vercel: ${err instanceof Error ? err.message : String(err)}` }, { status: 500 });
+    return NextResponse.json(
+      { error: `Erro ao conectar com Vercel: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 }
+    );
   }
 
-  // 4. Set env vars (Vertice's keys passed to each client project)
-  await fetch(`https://api.vercel.com/v10/projects/${vercelProjectId}/env`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${vercelToken}`, "Content-Type": "application/json" },
-    body: JSON.stringify([
-      { key: "GEMINI_API_KEY", value: geminiKey, type: "encrypted", target: ["production"] },
-      { key: "RESEND_API_KEY", value: resendKey, type: "encrypted", target: ["production"] },
-      { key: "CRON_SECRET", value: cronSecret, type: "encrypted", target: ["production"] },
-    ]),
-  });
+  // 4. Set env vars on Vercel project
+  try {
+    await fetch(
+      `https://api.vercel.com/v10/projects/${vercelProjectId}/env`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${vercelToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify([
+          { key: "GEMINI_API_KEY", value: geminiKey, type: "encrypted", target: ["production"] },
+          { key: "GMAIL_USER", value: gmailUser, type: "encrypted", target: ["production"] },
+          { key: "GMAIL_APP_PASSWORD", value: gmailPass, type: "encrypted", target: ["production"] },
+          { key: "CRON_SECRET", value: cronSecret, type: "encrypted", target: ["production"] },
+        ]),
+      }
+    );
+  } catch (err) {
+    console.error("Failed to set env vars:", err);
+  }
+
+  const testUrl = `https://${repoName}.vercel.app/api/cron/resumo?secret=${cronSecret}`;
 
   return NextResponse.json({
-    success: true, repoUrl, appUrl,
-    testUrl: `${appUrl}/api/cron/resumo?secret=${cronSecret}`,
+    success: true,
+    repoUrl,
+    appUrl: `https://${repoName}.vercel.app`,
+    testUrl,
     cronSecret,
   });
 }
