@@ -1,9 +1,9 @@
-export const metadata = { title: "Curadoria Medica - Dra. Eriane Faria" };
+export const metadata = { title: "Vértice Consultoria Estratégica" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body style={{ margin: 0, background: "#F9F8F7" }}>{children}</body>
+      <body style={{ margin: 0, background: "#000" }}>{children}</body>
     </html>
   );
 }
