@@ -118,7 +118,7 @@ export default function SetupPage() {
             {(campos as [string, string, string][]).map(([k, lbl, ph]) => (
               <div key={k} style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", fontSize: 11, color: "#666", marginBottom: 6, letterSpacing: 1 }}>{lbl}</label>
-                <input style={{ width: "100%", padding: "10px 12px", border: "1px solid #333", borderRadius: 2, fontSize: 14, fontFamily: "Georgia,serif", boxSizing: "border-box", background: "#111", color: "#ddd" }} placeholder={ph} value={(form as Record<string,string>)[k]} onChange={e => set(k, e.target.value)} />
+                <input style={{ width: "100%", padding: "10px 12px", border: "1px solid #333", borderRadius: 2, fontSize: 14, fontFamily: "Georgia,serif", boxSizing: "border-box", background: "#111", color: "#ddd" }} placeholder={ph} value={String((form as Record<string, unknown>)[k] ?? "")} onChange={e => set(k, e.target.value)} />
               </div>
             ))}
           </div>
@@ -132,7 +132,7 @@ export default function SetupPage() {
           ].map(([k, lbl, ph]) => (
             <div key={k} style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: 11, color: "#666", marginBottom: 6, letterSpacing: 1 }}>{lbl}</label>
-              <input style={{ width: "100%", padding: "10px 12px", border: "1px solid #333", borderRadius: 2, fontSize: 14, fontFamily: "Georgia,serif", boxSizing: "border-box", background: "#111", color: "#ddd" }} placeholder={ph} value={(form as Record<string,string>)[k]} onChange={e => set(k, e.target.value)} />
+              <input style={{ width: "100%", padding: "10px 12px", border: "1px solid #333", borderRadius: 2, fontSize: 14, fontFamily: "Georgia,serif", boxSizing: "border-box", background: "#111", color: "#ddd" }} placeholder={ph} value={String((form as Record<string, unknown>)[k] ?? "")} onChange={e => set(k, e.target.value)} />
             </div>
           ))}
           <div>
@@ -222,7 +222,6 @@ export default function SetupPage() {
               </button>
             </div>
             <pre style={{ background: "#000", color: "#e8e8e8", padding: 20, borderRadius: 2, fontSize: 12, overflow: "auto", lineHeight: 1.6, margin: 0, border: "1px solid #222" }}>{gerado}</pre>
-
             <div style={{ background: "#000", border: `1px solid ${ouro}`, borderRadius: 2, padding: 20, marginTop: 20 }}>
               <h3 style={{ color: ouro, fontSize: 12, margin: "0 0 12px", letterSpacing: 2 }}>PRÓXIMOS PASSOS</h3>
               <ol style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: "#888", lineHeight: 2 }}>
@@ -230,8 +229,6 @@ export default function SetupPage() {
                 <li>Abra o GitHub → repositório → arquivo <strong style={{ color: ouro }}>config.ts</strong></li>
                 <li>Clique no lápis (editar) e cole o conteúdo</li>
                 <li>Clique em <strong style={{ color: ouro }}>Commit changes</strong></li>
-                <li>No Vercel, configure: <code style={{ background: "#111", padding: "2px 6px", borderRadius: 2, fontSize: 11, color: ouro }}>GEMINI_API_KEY</code> <code style={{ background: "#111", padding: "2px 6px", borderRadius: 2, fontSize: 11, color: ouro }}>RESEND_API_KEY</code> <code style={{ background: "#111", padding: "2px 6px", borderRadius: 2, fontSize: 11, color: ouro }}>CRON_SECRET</code></li>
-                <li>Acesse <strong style={{ color: ouro }}>/api/cron/resumo?secret=SUA_SENHA</strong> para testar</li>
               </ol>
             </div>
           </div>
