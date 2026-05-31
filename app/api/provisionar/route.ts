@@ -141,8 +141,7 @@ function montarEmail(conteudo) {
     '<div style="max-width:700px;margin:0 auto;padding:40px 20px;">' + conteudo + '</div>' +
     '<div style="background:#1a1a1a;padding:25px 40px;text-align:center;margin-top:40px;">' +
     '<img src="' + logo + '" alt="Vértice" style="height:36px;width:auto;margin-bottom:12px;opacity:0.7;" />' +
-    '<p style="color:#9B8559;margin:0;font-size:12px;">RESUMO GERADO AUTOMATICAMENTE — GEMINI 2.5 FLASH</p>' +
-    '<p style="color:#555;margin:8px 0 0;font-size:11px;">Vértice Consultoria Estratégica</p></div></body></html>';
+    '<p style="color:#9B8559;margin:0;font-size:12px;">VÉRTICE CONSULTORIA ESTRATÉGICA</p></div></body></html>';
 }
 `;
 }
