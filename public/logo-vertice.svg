@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 260" width="600" height="260">
+  <rect width="600" height="260" fill="#000000"/>
+  <!-- Triângulo dourado -->
+  <polygon points="300,30 430,170 170,170" fill="none" stroke="#C9A462" stroke-width="6"/>
+  <!-- Linha base do triângulo (abertura) -->
+  <line x1="200" y1="170" x2="252" y2="170" stroke="#000000" stroke-width="8"/>
+  <line x1="348" y1="170" x2="400" y2="170" stroke="#000000" stroke-width="8"/>
+  <!-- Texto VÉRTICE -->
+  <text x="300" y="215" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="52" font-weight="200" fill="#FFFFFF" text-anchor="middle" letter-spacing="18">VÉRTICE</text>
+  <!-- Subtítulo -->
+  <text x="300" y="242" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="300" fill="#888888" text-anchor="middle" letter-spacing="8">CONSULTORIA ESTRATÉGICA</text>
+</svg>
