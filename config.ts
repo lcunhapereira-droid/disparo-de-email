@@ -66,14 +66,19 @@ export const CONFIG = {
   // ----------------------------------------------------------
   feeds: [
     {
-      url: "https://www.sciencedaily.com/rss/health_medicine/obesity.xml",
-      categoria: "Endocrinologia",
-      fonte: "ScienceDaily - Obesidade e Metabolismo",
+      url: "https://www.sciencedaily.com/rss/health_medicine/women_health.xml",
+      categoria: "Saude da Mulher",
+      fonte: "ScienceDaily - Saude Feminina",
     },
     {
       url: "https://www.sciencedaily.com/rss/health_medicine/menopause.xml",
       categoria: "Ginecologia",
-      fonte: "ScienceDaily - Menopausa e Climaterio",
+      fonte: "ScienceDaily - Menopausa",
+    },
+    {
+      url: "https://www.sciencedaily.com/rss/health_medicine/obesity.xml",
+      categoria: "Endocrinologia",
+      fonte: "ScienceDaily - Obesidade e Metabolismo",
     },
     {
       url: "https://www.sciencedaily.com/rss/health_medicine/skin_care.xml",
@@ -81,29 +86,34 @@ export const CONFIG = {
       fonte: "ScienceDaily - Dermatologia",
     },
     {
-      url: "https://www.nejm.org/action/showFeed?jc=nejm&type=etoc&feed=rss",
-      categoria: "Geral",
-      fonte: "New England Journal of Medicine",
-    },
-    {
-      url: "https://www.bmj.com/rss/current.xml",
-      categoria: "Geral",
-      fonte: "British Medical Journal",
-    },
-    {
-      url: "https://jamanetwork.com/rss/site_3/68.xml",
-      categoria: "Dermatologia",
-      fonte: "JAMA Dermatology",
-    },
-    {
-      url: "https://www.thelancet.com/rssfeed/lancet_online.xml",
-      categoria: "Geral",
-      fonte: "The Lancet",
-    },
-    {
-      url: "https://www.thelancet.com/rssfeed/landef_online.xml",
+      url: "https://www.sciencedaily.com/rss/health_medicine/hormone_disorders.xml",
       categoria: "Endocrinologia",
-      fonte: "The Lancet Diabetes & Endocrinology",
+      fonte: "ScienceDaily - Hormonios",
+    },
+    {
+      url: "https://medicalxpress.com/rss-feed/breaking/",
+      categoria: "Medicina Geral",
+      fonte: "Medical Xpress",
+    },
+    {
+      url: "https://medicalxpress.com/rss-feed/medical-research/",
+      categoria: "Pesquisa Medica",
+      fonte: "Medical Xpress Research",
+    },
+    {
+      url: "https://www.healio.com/rss/endocrinology",
+      categoria: "Endocrinologia",
+      fonte: "Healio Endocrinology",
+    },
+    {
+      url: "https://www.healio.com/rss/obgyn",
+      categoria: "Ginecologia",
+      fonte: "Healio OB/GYN",
+    },
+    {
+      url: "https://www.mdedge.com/rss/dermatology",
+      categoria: "Dermatologia",
+      fonte: "MDEdge Dermatology",
     },
   ],
 
