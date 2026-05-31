@@ -129,15 +129,18 @@ function processarComGemini(noticias) {
 
 function montarEmail(conteudo) {
   var data = Utilities.formatDate(new Date(), "America/Sao_Paulo", "EEEE, dd 'de' MMMM 'de' yyyy");
+  var logo = "https://drive.google.com/uc?export=view&id=1sClOE67h7tNAURoR8LFTef7iJAGFzKQc";
   return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head>' +
     '<body style="margin:0;padding:0;background-color:#F9F8F7;font-family:Georgia,serif;">' +
-    '<div style="background:linear-gradient(135deg,#9B8559,#b8a07a);padding:30px 40px;text-align:center;">' +
-    '<h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:2px;font-weight:normal;">' + CONFIG.tituloEmail + '</h1>' +
-    '<p style="color:#F6E6EA;margin:8px 0 0;font-size:13px;">' + CONFIG.nome.toUpperCase() + '</p></div>' +
+    '<div style="background:linear-gradient(135deg,#9B8559,#b8a07a);padding:24px 40px 20px;text-align:center;">' +
+    '<img src="' + logo + '" alt="Vértice Consultoria Estratégica" style="height:64px;width:auto;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" />' +
+    '<h1 style="color:#fff;margin:0;font-size:20px;letter-spacing:2px;font-weight:normal;">' + CONFIG.tituloEmail + '</h1>' +
+    '<p style="color:#F6E6EA;margin:8px 0 0;font-size:12px;">' + CONFIG.nome.toUpperCase() + '</p></div>' +
     '<div style="background:#DDE8E2;padding:12px 40px;text-align:center;">' +
     '<p style="margin:0;color:#4a6741;font-size:13px;">' + data + '</p></div>' +
     '<div style="max-width:700px;margin:0 auto;padding:40px 20px;">' + conteudo + '</div>' +
     '<div style="background:#1a1a1a;padding:25px 40px;text-align:center;margin-top:40px;">' +
+    '<img src="' + logo + '" alt="Vértice" style="height:36px;width:auto;margin-bottom:12px;opacity:0.7;" />' +
     '<p style="color:#9B8559;margin:0;font-size:12px;">RESUMO GERADO AUTOMATICAMENTE — GEMINI 2.5 FLASH</p>' +
     '<p style="color:#555;margin:8px 0 0;font-size:11px;">Vértice Consultoria Estratégica</p></div></body></html>';
 }
