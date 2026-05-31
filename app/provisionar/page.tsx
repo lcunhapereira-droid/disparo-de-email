@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 interface SuccessData {
-  scriptUrl: string;
-  titulo: string;
+  scriptCode: string;
+  tituloEmail: string;
+  assunto: string;
   email: string;
   horario: number;
-  autoTrigger: boolean;
 }
 
 const inputStyle: React.CSSProperties = {
@@ -40,6 +40,7 @@ export default function ProvisionarPage() {
   const [loadingMsg, setLoadingMsg] = useState("");
   const [success, setSuccess] = useState<SuccessData | null>(null);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,9 +50,8 @@ export default function ProvisionarPage() {
     setLoadingMsg("Analisando perfil com Gemini...");
 
     const msgs = [
-      { t: 4000, m: "Gerando configuração personalizada..." },
-      { t: 8000, m: "Criando script no Google..." },
-      { t: 12000, m: "Configurando envio automático..." },
+      { t: 4000, m: "Selecionando feeds especializados..." },
+      { t: 9000, m: "Gerando código personalizado..." },
     ];
     const timers = msgs.map(({ t, m }) => setTimeout(() => setLoadingMsg(m), t));
 
@@ -77,6 +77,14 @@ export default function ProvisionarPage() {
     }
   }
 
+  function handleCopy() {
+    if (!success) return;
+    navigator.clipboard.writeText(success.scriptCode).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    });
+  }
+
   if (success) {
     return (
       <main style={{ fontFamily: "Georgia, serif", minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -85,40 +93,73 @@ export default function ProvisionarPage() {
             <polygon points="36,2 70,60 2,60" fill="none" stroke="#C9A462" strokeWidth="2.5" />
             <polygon points="36,18 58,58 14,58" fill="#000" />
           </svg>
-          <div style={{ color: "#C9A462", fontSize: 13, letterSpacing: 4 }}>AGENTE CRIADO</div>
+          <div style={{ color: "#C9A462", fontSize: 13, letterSpacing: 4 }}>AGENTE GERADO</div>
         </header>
-        <div style={{ maxWidth: 560, width: "100%", padding: "40px 20px", boxSizing: "border-box" }}>
-          <div style={{ background: "#0a0a0a", border: "1px solid #C9A462", borderRadius: 4, padding: 28 }}>
-            <div style={{ color: "#C9A462", fontSize: 10, letterSpacing: 4, marginBottom: 20 }}>AGENTE CONFIGURADO</div>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ color: "#555", fontSize: 11, marginBottom: 4 }}>DESTINATÁRIO</div>
-              <div style={{ color: "#fff", fontSize: 13 }}>{success.nome || nome} — {success.email || email}</div>
+
+        <div style={{ maxWidth: 680, width: "100%", padding: "32px 20px 60px", boxSizing: "border-box" }}>
+
+          {/* Resumo */}
+          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: 4, padding: 20, marginBottom: 24, display: "flex", gap: 32 }}>
+            <div>
+              <div style={{ color: "#555", fontSize: 10, letterSpacing: 2, marginBottom: 4 }}>DESTINATÁRIO</div>
+              <div style={{ color: "#fff", fontSize: 13 }}>{success.email}</div>
             </div>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ color: "#555", fontSize: 11, marginBottom: 4 }}>HORÁRIO DE ENVIO</div>
-              <div style={{ color: "#fff", fontSize: 13 }}>{String(success.horario ?? horario).padStart(2, "0")}:00 (Brasília)</div>
+            <div>
+              <div style={{ color: "#555", fontSize: 10, letterSpacing: 2, marginBottom: 4 }}>HORÁRIO</div>
+              <div style={{ color: "#fff", fontSize: 13 }}>{String(success.horario).padStart(2, "0")}:00 Brasília</div>
             </div>
-            {success.autoTrigger ? (
-              <div style={{ background: "#0a1a0a", border: "1px solid #2a5a2a", borderRadius: 3, padding: 16, marginBottom: 20 }}>
-                <div style={{ color: "#4CAF50", fontSize: 11, letterSpacing: 2, marginBottom: 6 }}>ENVIO AUTOMÁTICO ATIVO</div>
-                <div style={{ color: "#888", fontSize: 12 }}>O agente já está configurado e enviará o email automaticamente no horário definido.</div>
-              </div>
-            ) : (
-              <div style={{ background: "#1a1200", border: "1px solid #5a4400", borderRadius: 3, padding: 16, marginBottom: 20 }}>
-                <div style={{ color: "#C9A462", fontSize: 11, letterSpacing: 2, marginBottom: 8 }}>AÇÃO NECESSÁRIA — 1 CLIQUE</div>
-                <div style={{ color: "#888", fontSize: 12, marginBottom: 12 }}>Abra o script e execute a função <strong style={{ color: "#C9A462" }}>setup</strong> uma única vez para ativar o envio automático.</div>
-                <a href={success.scriptUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", background: "#C9A462", color: "#000", padding: "10px 16px", borderRadius: 3, textAlign: "center", fontSize: 12, letterSpacing: 2, textDecoration: "none", fontWeight: "bold" }}>
-                  ABRIR SCRIPT →
-                </a>
-                <div style={{ color: "#555", fontSize: 11, marginTop: 10 }}>No script: clique em ▶ Run → selecione <code style={{ color: "#C9A462" }}>setup</code> → autorize → pronto.</div>
-              </div>
-            )}
-            <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 16 }}>
-              <div style={{ color: "#555", fontSize: 11, marginBottom: 8 }}>LINK DO SCRIPT (para edições futuras)</div>
-              <a href={success.scriptUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#C9A462", fontSize: 12, wordBreak: "break-all" }}>{success.scriptUrl}</a>
+            <div>
+              <div style={{ color: "#555", fontSize: 10, letterSpacing: 2, marginBottom: 4 }}>ASSUNTO</div>
+              <div style={{ color: "#fff", fontSize: 13 }}>{success.assunto}</div>
             </div>
           </div>
-          <div style={{ textAlign: "center", marginTop: 24 }}>
+
+          {/* Instruções */}
+          <div style={{ background: "#0d0d00", border: "1px solid #C9A462", borderRadius: 4, padding: 24, marginBottom: 24 }}>
+            <div style={{ color: "#C9A462", fontSize: 10, letterSpacing: 4, marginBottom: 16 }}>3 PASSOS PARA ATIVAR</div>
+            {[
+              { n: "1", txt: "Copie o código abaixo", sub: "Clique no botão COPIAR CÓDIGO" },
+              { n: "2", txt: "Abra o Google Apps Script", sub: "Acesse script.google.com → Novo projeto → cole o código (Ctrl+A, depois Ctrl+V)" },
+              { n: "3", txt: "Execute a função setup", sub: 'No menu superior: Run → Run function → setup → autorize quando solicitado → pronto' },
+            ].map(({ n, txt, sub }) => (
+              <div key={n} style={{ display: "flex", gap: 16, marginBottom: 16, alignItems: "flex-start" }}>
+                <div style={{ background: "#C9A462", color: "#000", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold", flexShrink: 0 }}>{n}</div>
+                <div>
+                  <div style={{ color: "#fff", fontSize: 13, marginBottom: 3 }}>{txt}</div>
+                  <div style={{ color: "#666", fontSize: 12 }}>{sub}</div>
+                </div>
+              </div>
+            ))}
+            <a
+              href="https://script.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "inline-block", marginTop: 8, background: "#1a1a1a", border: "1px solid #333", color: "#C9A462", padding: "8px 16px", borderRadius: 3, fontSize: 12, letterSpacing: 2, textDecoration: "none" }}
+            >
+              ABRIR SCRIPT.GOOGLE.COM →
+            </a>
+          </div>
+
+          {/* Código */}
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ color: "#555", fontSize: 10, letterSpacing: 3 }}>CÓDIGO DO AGENTE</div>
+              <button
+                onClick={handleCopy}
+                style={{ background: copied ? "#2a5a2a" : "#C9A462", border: "none", borderRadius: 3, color: copied ? "#4CAF50" : "#000", padding: "8px 20px", fontSize: 11, letterSpacing: 2, cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: "bold", transition: "background 0.2s" }}
+              >
+                {copied ? "✓ COPIADO" : "COPIAR CÓDIGO"}
+              </button>
+            </div>
+            <textarea
+              readOnly
+              value={success.scriptCode}
+              style={{ ...inputStyle, height: 320, resize: "vertical", fontFamily: "monospace", fontSize: 11, lineHeight: 1.5, color: "#ccc" }}
+              onClick={e => (e.target as HTMLTextAreaElement).select()}
+            />
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 32 }}>
             <a href="/provisionar" style={{ color: "#C9A462", fontSize: 12, letterSpacing: 2, textDecoration: "none" }}>← CRIAR OUTRO AGENTE</a>
           </div>
         </div>
@@ -140,7 +181,8 @@ export default function ProvisionarPage() {
       </header>
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 560, width: "100%", padding: "32px 20px 60px", boxSizing: "border-box" }}>
-        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 24, marginTop: 24 }}>
+
+        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 24, marginTop: 8 }}>
           <div style={{ color: "#C9A462", fontSize: 10, letterSpacing: 4, marginBottom: 18 }}>DESTINATÁRIO</div>
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>NOME COMPLETO *</label>
@@ -160,7 +202,7 @@ export default function ProvisionarPage() {
           </div>
         </div>
 
-        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 24, marginTop: 24 }}>
+        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: 24, marginTop: 8 }}>
           <div style={{ color: "#C9A462", fontSize: 10, letterSpacing: 4, marginBottom: 18 }}>PERFIL E INTERESSES</div>
           <div style={{ marginBottom: 6 }}>
             <label style={labelStyle}>DESCRIÇÃO LIVRE *</label>
@@ -169,9 +211,9 @@ export default function ProvisionarPage() {
               required
               value={descricao}
               onChange={e => setDescricao(e.target.value)}
-              placeholder={"Ex: Médico cardiologista em São Paulo, atende adultos e idosos. Quer receber notícias sobre cardiologia, arritmias, insuficiência cardíaca, novos medicamentos e pesquisas clínicas. Prefere conteúdo científico em português."}
+              placeholder="Ex: Médico cardiologista em São Paulo, atende adultos e idosos. Quer receber notícias sobre cardiologia, arritmias, insuficiência cardíaca, novos medicamentos e pesquisas clínicas. Prefere conteúdo científico em português."
             />
-            <div style={{ color: "#444", fontSize: 11, marginTop: 6 }}>Quanto mais detalhes, mais personalizado será o agente.</div>
+            <div style={{ color: "#444", fontSize: 11, marginTop: 6 }}>Quanto mais detalhes, mais personalizado o agente.</div>
           </div>
         </div>
 
@@ -188,7 +230,7 @@ export default function ProvisionarPage() {
           </div>
         ) : (
           <button type="submit" style={{ width: "100%", marginTop: 32, padding: "16px", background: "#C9A462", border: "none", borderRadius: 3, color: "#000", fontSize: 13, letterSpacing: 4, fontFamily: "Georgia, serif", cursor: "pointer", fontWeight: "bold" }}>
-            CRIAR AGENTE
+            GERAR AGENTE
           </button>
         )}
       </form>
