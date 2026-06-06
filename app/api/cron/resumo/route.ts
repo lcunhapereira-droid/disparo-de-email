@@ -15,7 +15,7 @@ async function coletarNoticias(): Promise<Noticia[]> {
       const resultado = await parseStringPromise(response.data, { explicitArray: false });
       const itens = resultado?.rss?.channel?.item || [];
       const lista = Array.isArray(itens) ? itens : [itens];
-      for (const item of lista.slice(0, 8)) {
+      for (const item of lista.slice(0, 15)) {
         const titulo = String(item.title || "").replace(/<[^>]*>/g, "").trim();
         const link = String(item.link || item.guid || "").trim();
         const descricao = String(item.description || item.summary || "").replace(/<[^>]*>/g, "").trim().substring(0, 600);
@@ -29,7 +29,7 @@ async function coletarNoticias(): Promise<Noticia[]> {
 
 async function processarComGemini(noticias: Noticia[], apiKey: string): Promise<string> {
   const ai = new GoogleGenAI({ apiKey });
-  const { identidade, secoes, filtro, idiomaSaida, visual } = CONFIG;
+  const { identidade, secoes, filtro, idiomaSaida, visual, promptCustom } = CONFIG as typeof CONFIG & { promptCustom?: string };
 
   const noticiasTexto = noticias.map((n, i) =>
     `[${i + 1}] CATEGORIA: ${n.categoria}\nFONTE: ${n.fonte}\nTITULO: ${n.titulo}\nRESUMO: ${n.descricao}\nLINK: ${n.link}`
@@ -38,9 +38,10 @@ async function processarComGemini(noticias: Noticia[], apiKey: string): Promise<
   const secoesTexto = secoes.map((s, i) => `${i + 1}. ${s}`).join("\n");
   const incluirTexto = filtro.incluir.map(i => `- ${i}`).join("\n");
   const excluirTexto = filtro.excluir.map(e => `- ${e}`).join("\n");
-  const identificacao = identidade.identificacao ? ` (${identidade.identificacao})` : "";
 
-  const prompt = `Voce e um agente de curadoria de conteudo para ${identidade.nomeDestinatario}, ${identidade.descricaoProfissional}${identificacao}, ${identidade.localidade}.\n\nTAREFA: Analise os ${noticias.length} itens abaixo e crie um RESUMO EXECUTIVO em HTML formatado e elegante.\nTraduza todo o conteudo para ${idiomaSaida}.\n\nFILTRO DE QUALIDADE - INCLUA APENAS:\n${incluirTexto}\n\nEXCLUA COMPLETAMENTE:\n${excluirTexto}\n\nORGANIZACAO (use apenas as secoes abaixo):\n${secoesTexto}\n\nFORMATO DE CADA ITEM SELECIONADO:\n- Titulo em ${idiomaSaida} (em negrito)\n- Principais pontos (2-3 linhas objetivas)\n- Relevancia pratica para ${identidade.nomeDestinatario}\n- Fonte: [nome] com link clicavel\n\nUSE HTML limpo com style inline.\nCor dos titulos de secao: ${visual.corPrimaria}, fundo de secao: #f5f0e8, texto: #333.\nSe nenhum item de uma secao passar no filtro, omita a secao.\nAo final inclua: "Total de itens analisados: ${noticias.length}"\n\nCONTEUDO PARA ANALISE:\n${noticiasTexto}\n\nRetorne APENAS o HTML do conteudo principal (sem html, head ou body tags).`;
+  const contexto = promptCustom || `Voce e um agente de curadoria de conteudo para ${identidade.nomeDestinatario}, ${identidade.descricaoProfissional}, ${identidade.localidade}.`;
+
+  const prompt = `${contexto}\n\nTAREFA: Analise os ${noticias.length} itens abaixo e crie um RESUMO EXECUTIVO em HTML formatado e elegante.\nTraduza todo o conteudo para ${idiomaSaida}.\n\nFILTRO DE QUALIDADE - INCLUA APENAS:\n${incluirTexto}\n\nEXCLUA COMPLETAMENTE:\n${excluirTexto}\n\nORGANIZACAO (use apenas as secoes abaixo):\n${secoesTexto}\n\nFORMATO DE CADA ITEM SELECIONADO:\n- Titulo em ${idiomaSaida} (em negrito)\n- Principais pontos (2-3 linhas objetivas)\n- Relevancia pratica\n- Fonte: [nome] com link clicavel\n\nUSE HTML limpo com style inline.\nCor dos titulos de secao: ${visual.corPrimaria}, fundo de secao: #f5f0e8, texto: #333.\nMaximo 5 artigos por especialidade. Se nenhum item de uma secao passar no filtro, omita a secao.\nAo final inclua: "Total de itens analisados: ${noticias.length}"\n\nCONTEUDO PARA ANALISE:\n${noticiasTexto}\n\nRetorne APENAS o HTML do conteudo principal (sem html, head ou body tags).`;
 
   const response = await ai.models.generateContent({ model: "gemini-2.5-flash", contents: prompt });
   return response.text || "<p>Nao foi possivel gerar o resumo.</p>";
