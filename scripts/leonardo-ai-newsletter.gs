@@ -88,6 +88,44 @@ function enviarEmail() {
   Logger.log("✅ Email enviado para " + CONFIG.email);
 }
 
+// Extrai URL de imagem de um item RSS/Atom
+function extrairImagem(item) {
+  // 1. media:content (usado por VentureBeat, TechCrunch, MarkTechPost)
+  var mediaNs = XmlService.getNamespace("http://search.yahoo.com/mrss/");
+  var mediaContent = item.getChild("content", mediaNs);
+  if (mediaContent) {
+    var url = (mediaContent.getAttribute("url") || { getValue: function() { return ""; } }).getValue();
+    if (url) return url;
+  }
+
+  // 2. media:thumbnail
+  var mediaThumbnail = item.getChild("thumbnail", mediaNs);
+  if (mediaThumbnail) {
+    var url = (mediaThumbnail.getAttribute("url") || { getValue: function() { return ""; } }).getValue();
+    if (url) return url;
+  }
+
+  // 3. enclosure (podcast/imagem direto no RSS)
+  var enclosure = item.getChild("enclosure");
+  if (enclosure) {
+    var type = (enclosure.getAttribute("type") || { getValue: function() { return ""; } }).getValue();
+    if (type.indexOf("image") !== -1) {
+      var url = (enclosure.getAttribute("url") || { getValue: function() { return ""; } }).getValue();
+      if (url) return url;
+    }
+  }
+
+  // 4. Tenta extrair primeira <img> do description/content
+  var descEl = item.getChild("description") || item.getChild("summary") || item.getChild("content");
+  if (descEl) {
+    var html = descEl.getValue() || descEl.getText();
+    var match = html.match(/src=["']([^"']+\.(?:jpg|jpeg|png|webp|gif)[^"']*)/i);
+    if (match && match[1]) return match[1];
+  }
+
+  return "";
+}
+
 function coletarNoticias() {
   var noticias = [];
   for (var i = 0; i < CONFIG.feeds.length; i++) {
@@ -110,11 +148,9 @@ function coletarNoticias() {
       var xml = response.getContentText();
       var items = [];
 
-      // Tenta RSS padrão
       try {
         var doc = XmlService.parse(xml);
         var root = doc.getRootElement();
-        var ns = root.getNamespace();
 
         // RSS 2.0
         var channel = root.getChild("channel");
@@ -140,17 +176,15 @@ function coletarNoticias() {
         var titulo = "";
         var link = "";
         var desc = "";
+        var imagem = "";
 
-        // Tenta pegar título
         var titleEl = item.getChild("title");
         if (titleEl) titulo = titleEl.getText().replace(/<[^>]*>/g, "").trim();
 
-        // Tenta pegar link (RSS e Atom)
         var linkEl = item.getChild("link");
         if (linkEl) {
           link = linkEl.getText().trim();
           if (!link) {
-            // Atom usa atributo href
             link = (linkEl.getAttribute("href") || { getValue: function() { return ""; } }).getValue().trim();
           }
         }
@@ -159,9 +193,11 @@ function coletarNoticias() {
           if (guidEl) link = guidEl.getText().trim();
         }
 
-        // Tenta pegar descrição
         var descEl = item.getChild("description") || item.getChild("summary") || item.getChild("content");
         if (descEl) desc = descEl.getText().replace(/<[^>]*>/g, "").trim().substring(0, 500);
+
+        // Extrai imagem
+        try { imagem = extrairImagem(item); } catch(e) { imagem = ""; }
 
         if (!titulo || !link) continue;
 
@@ -169,6 +205,7 @@ function coletarNoticias() {
           titulo: titulo,
           link: link,
           descricao: desc,
+          imagem: imagem,
           categoria: feed.categoria,
           fonte: feed.fonte,
         });
@@ -189,7 +226,8 @@ function processarComGemini(noticias) {
       "\nFONTE: " + n.fonte +
       "\nTITULO: " + n.titulo +
       "\nRESUMO: " + n.descricao +
-      "\nLINK: " + n.link;
+      "\nLINK: " + n.link +
+      (n.imagem ? "\nIMAGEM: " + n.imagem : "");
   }).join("\n\n---\n\n");
 
   var secoesTexto = CONFIG.secoes.join(", ");
@@ -197,24 +235,36 @@ function processarComGemini(noticias) {
   var excluirTexto = CONFIG.filtro.excluir.join("; ");
 
   var prompt = "Você é o curador de conteúdo de IA de Leonardo Cunha Pereira, especialista em inteligência artificial, agentes, MCP servers e ferramentas modernas de IA.\n\n" +
-    "TAREFA: Analise os " + noticias.length + " itens abaixo e crie um RESUMO EXECUTIVO em HTML de newsletter profissional.\n" +
+    "TAREFA: Analise os " + noticias.length + " itens abaixo e crie um RESUMO EXECUTIVO em HTML de newsletter visual profissional.\n" +
     "Traduza todo o conteúdo para português brasileiro.\n\n" +
     "INCLUA APENAS: " + incluirTexto + "\n" +
     "EXCLUA: " + excluirTexto + "\n\n" +
     "SEÇÕES (use apenas as relevantes, máximo 5 artigos por seção): " + secoesTexto + "\n\n" +
-    "FORMATO HTML OBRIGATÓRIO — para cada seção:\n" +
-    '<div style="margin-bottom:32px;">\n' +
-    '  <div style="background:#1a1a2e;padding:10px 20px;margin-bottom:0;">\n' +
+    "FORMATO HTML OBRIGATÓRIO:\n\n" +
+    "Para cada SEÇÃO:\n" +
+    '<div style="margin-bottom:40px;">\n' +
+    '  <div style="background:#1a1a2e;padding:12px 20px;margin-bottom:4px;">\n' +
     '    <span style="color:#e0c97f;font-size:11px;letter-spacing:4px;font-family:Arial,sans-serif;font-weight:bold;">NOME DA SEÇÃO</span>\n' +
     '  </div>\n' +
-    '  <div style="border-left:4px solid #e0c97f;background:#fff;padding:16px 20px;margin-bottom:8px;border-bottom:1px solid #eee;">\n' +
-    '    <a href="LINK" style="color:#1a1a2e;font-size:14px;font-weight:bold;text-decoration:none;font-family:Georgia,serif;line-height:1.4;">TÍTULO</a>\n' +
-    '    <p style="color:#555;font-size:12px;line-height:1.7;margin:8px 0 6px;font-family:Arial,sans-serif;">RESUMO 2-3 LINHAS COM IMPACTO PRÁTICO</p>\n' +
-    '    <span style="color:#1a1a2e;font-size:10px;letter-spacing:2px;font-family:Arial,sans-serif;">FONTE: NOME</span>\n' +
+    "  Para cada artigo NESTA SEÇÃO, use este card:\n" +
+    "  SE o item tiver IMAGEM no campo IMAGEM:\n" +
+    '  <div style="background:#fff;border:1px solid #eee;margin-bottom:12px;overflow:hidden;">\n' +
+    '    <img src="URL_IMAGEM" alt="" style="width:100%;max-height:200px;object-fit:cover;display:block;" />\n' +
+    '    <div style="padding:16px 20px;">\n' +
+    '      <a href="LINK" style="color:#1a1a2e;font-size:15px;font-weight:bold;text-decoration:none;font-family:Georgia,serif;line-height:1.4;display:block;margin-bottom:8px;">TÍTULO</a>\n' +
+    '      <p style="color:#555;font-size:13px;line-height:1.7;margin:0 0 10px;font-family:Arial,sans-serif;">RESUMO 2-3 LINHAS</p>\n' +
+    '      <span style="color:#e0c97f;font-size:10px;letter-spacing:2px;font-family:Arial,sans-serif;font-weight:bold;">▶ FONTE: NOME</span>\n' +
+    '    </div>\n' +
+    '  </div>\n' +
+    "  SE o item NÃO tiver imagem:\n" +
+    '  <div style="background:#fff;border-left:4px solid #e0c97f;border-bottom:1px solid #eee;padding:16px 20px;margin-bottom:12px;">\n' +
+    '    <a href="LINK" style="color:#1a1a2e;font-size:15px;font-weight:bold;text-decoration:none;font-family:Georgia,serif;line-height:1.4;display:block;margin-bottom:8px;">TÍTULO</a>\n' +
+    '    <p style="color:#555;font-size:13px;line-height:1.7;margin:0 0 10px;font-family:Arial,sans-serif;">RESUMO 2-3 LINHAS</p>\n' +
+    '    <span style="color:#e0c97f;font-size:10px;letter-spacing:2px;font-family:Arial,sans-serif;font-weight:bold;">▶ FONTE: NOME</span>\n' +
     '  </div>\n' +
     '</div>\n\n' +
     "Se nenhum item de uma seção passar no filtro, omita completamente.\n" +
-    'Ao final: <p style="color:#999;font-size:10px;text-align:right;border-top:1px solid #eee;padding-top:12px;margin-top:24px;">Total de itens analisados: ' + noticias.length + '</p>\n\n' +
+    'Ao final: <p style="color:#999;font-size:10px;text-align:right;border-top:1px solid #eee;padding-top:12px;margin-top:24px;font-family:Arial,sans-serif;">Total de itens analisados: ' + noticias.length + '</p>\n\n' +
     "Retorne APENAS o HTML do conteúdo (sem html/head/body tags).\n\n" +
     "CONTEÚDO:\n" + noticiasTexto;
 
@@ -247,8 +297,8 @@ function montarEmail(conteudo) {
   var logo = "https://disparo-de-email.vercel.app/logo-vertice.png";
 
   return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
-    '<body style="margin:0;padding:0;background:#EDEAE4;font-family:Georgia,\'Times New Roman\',serif;">' +
-    '<div style="max-width:680px;margin:0 auto;">' +
+    '<body style="margin:0;padding:0;background:#0d0d1a;font-family:Georgia,\'Times New Roman\',serif;">' +
+    '<div style="max-width:680px;margin:0 auto;background:#EDEAE4;">' +
 
     // Cabeçalho
     '<div style="background:#0a0a1a;padding:32px 40px 24px;text-align:center;">' +
@@ -260,25 +310,27 @@ function montarEmail(conteudo) {
     '</div>' +
 
     // Faixa de data
-    '<div style="background:#e0c97f;padding:10px 40px;display:flex;justify-content:space-between;align-items:center;">' +
-    '<span style="color:#0a0a1a;font-size:12px;font-family:Arial,sans-serif;text-transform:capitalize;font-weight:bold;">' + data + '</span>' +
-    '<span style="color:rgba(10,10,26,0.6);font-size:11px;font-family:Arial,sans-serif;">' + edicao + '</span>' +
+    '<div style="background:#e0c97f;padding:10px 40px;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+    '<td style="color:#0a0a1a;font-size:12px;font-family:Arial,sans-serif;text-transform:capitalize;font-weight:bold;">' + data + '</td>' +
+    '<td align="right" style="color:rgba(10,10,26,0.6);font-size:11px;font-family:Arial,sans-serif;">' + edicao + '</td>' +
+    '</tr></table>' +
     '</div>' +
 
     // Nota editorial
-    '<div style="background:#fff;border-left:5px solid #e0c97f;margin:24px 20px 0;padding:20px 24px;">' +
-    '<div style="color:#e0c97f;font-size:10px;letter-spacing:3px;font-family:Arial,sans-serif;margin-bottom:8px;">NOTA EDITORIAL</div>' +
+    '<div style="background:#fff;border-left:5px solid #e0c97f;margin:20px 20px 0;padding:18px 22px;">' +
+    '<div style="color:#e0c97f;font-size:10px;letter-spacing:3px;font-family:Arial,sans-serif;margin-bottom:6px;">NOTA EDITORIAL</div>' +
     '<p style="margin:0;color:#555;font-size:13px;line-height:1.6;font-style:italic;">Curadoria diária de inteligência artificial: novos modelos, agentes, MCP servers, ferramentas open source e tutoriais práticos. Fontes: Anthropic, OpenAI, HuggingFace, Google AI, DeepLearning.AI, VentureBeat, TechCrunch e Simon Willison.</p>' +
     '</div>' +
 
     // Conteúdo principal
-    '<div style="background:#fff;margin:16px 20px 0;padding:32px 32px 16px;">' +
+    '<div style="background:#EDEAE4;padding:20px 20px 8px;">' +
     conteudo +
     '</div>' +
 
     // Rodapé
-    '<div style="background:#0a0a1a;padding:28px 40px;text-align:center;margin-top:0;">' +
-    '<img src="' + logo + '" alt="Vértice" style="height:40px;width:auto;opacity:0.5;margin-bottom:16px;" />' +
+    '<div style="background:#0a0a1a;padding:28px 40px;text-align:center;">' +
+    '<img src="' + logo + '" alt="Vértice" style="height:40px;width:auto;opacity:0.5;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto;" />' +
     '<div style="color:#e0c97f;font-size:11px;letter-spacing:3px;font-family:Arial,sans-serif;margin-bottom:6px;">VÉRTICE CONSULTORIA ESTRATÉGICA</div>' +
     '<div style="color:#444;font-size:10px;font-family:Arial,sans-serif;">Belo Horizonte, Brasil</div>' +
     '</div>' +
