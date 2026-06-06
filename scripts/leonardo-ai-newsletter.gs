@@ -272,7 +272,7 @@ function montarConteudoHTML(artigos) {
 function montarEmail(conteudo) {
   var data = Utilities.formatDate(new Date(), "America/Sao_Paulo", "EEEE, dd 'de' MMMM 'de' yyyy");
   var edicao = "Edição " + Utilities.formatDate(new Date(), "America/Sao_Paulo", "dd/MM/yyyy");
-  var logo = "https://raw.githubusercontent.com/lcunhapereira-droid/disparo-de-email/main/public/logo-vertice-dark.png";
+  var logo = "https://raw.githubusercontent.com/lcunhapereira-droid/luminous-melhor-versao/main/public/logo-vertice-dark.png";
 
   return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
     '<body style="margin:0;padding:0;background:#0d0d1a;font-family:Georgia,\'Times New Roman\',serif;">' +
