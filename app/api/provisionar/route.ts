@@ -129,7 +129,7 @@ function processarComGemini(noticias) {
 
 function montarEmail(conteudo) {
   var data = Utilities.formatDate(new Date(), "America/Sao_Paulo", "EEEE, dd 'de' MMMM 'de' yyyy");
-  var logo = "https://disparo-de-email.vercel.app/logo-vertice.png";
+  var logo = "https://disparo-de-email.vercel.app/logo-vertice-dark.png";
   return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"></head>' +
     '<body style="margin:0;padding:0;background-color:#F9F8F7;font-family:Georgia,serif;">' +
     '<div style="background:linear-gradient(135deg,#9B8559,#b8a07a);padding:24px 40px 20px;text-align:center;">' +
