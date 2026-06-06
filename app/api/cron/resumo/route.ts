@@ -3,6 +3,8 @@ import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { parseStringPromise } from "xml2js";
 import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
 import { CONFIG } from "../../../../config";
 
 type Noticia = { titulo: string; link: string; descricao: string; categoria: string; fonte: string };
@@ -49,7 +51,7 @@ async function processarComGemini(noticias: Noticia[], apiKey: string): Promise<
 
 function montarEmailHTML(conteudo: string): string {
   const { identidade, visual } = CONFIG;
-  const logoUrl = "https://raw.githubusercontent.com/lcunhapereira-droid/luminous-melhor-versao/main/public/logo-vertice-dark.png";
+  const logoUrl = "cid:logo-vertice@vertice";
   const dataHoje = new Date().toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Sao_Paulo" });
   const edicao = `Edição ${new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" })}`;
 
@@ -118,11 +120,14 @@ export async function GET(request: NextRequest) {
       service: "gmail",
       auth: { user: gmailUser, pass: gmailPass },
     });
+    const logoPath = path.join(process.cwd(), "public", "logo-vertice-dark.png");
+    const logoContent = fs.existsSync(logoPath) ? fs.readFileSync(logoPath) : undefined;
     await transporter.sendMail({
       from: `Curadoria IA <${gmailUser}>`,
       to: CONFIG.email.destinatario,
       subject: `${CONFIG.email.assunto} - ${new Date().toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
       html: montarEmailHTML(conteudo),
+      attachments: logoContent ? [{ filename: "logo-vertice-dark.png", content: logoContent, cid: "logo-vertice@vertice" }] : [],
     });
     return NextResponse.json({ success: true, noticias: noticias.length });
   } catch (err) {
