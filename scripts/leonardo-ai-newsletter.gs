@@ -188,16 +188,17 @@ function selecionarComGemini(noticias) {
     return i + "|" + n.categoria + "|" + n.fonte + "|" + n.titulo + "|" + n.link + "|" + n.imagem + "|" + n.descricao.replace(/\|/g, " ");
   }).join("\n");
 
-  var prompt = "Você é curador de IA para Leonardo Cunha Pereira.\n\n" +
+  var prompt = "Você é curador de IA para Leonardo Cunha Pereira. IDIOMA DE SAÍDA: PORTUGUÊS BRASILEIRO — tudo deve ser escrito em português, sem exceção.\n\n" +
     "LISTA DE ARTIGOS (formato: índice|categoria|fonte|título|link|imagem|descrição):\n" +
     noticiasTexto + "\n\n" +
     "TAREFA:\n" +
     "1. Selecione os 15 artigos mais relevantes sobre: novos modelos de IA, agentes, MCP servers, ferramentas open source, tutoriais práticos, otimização de tokens.\n" +
     "2. Exclua: conteúdo publicitário, análises financeiras, política.\n" +
-    "3. Para cada selecionado, traduza o título e escreva um resumo de 2 frases em português brasileiro.\n\n" +
-    "Retorne SOMENTE um array JSON válido, sem markdown, sem explicações:\n" +
-    '[{"titulo":"TÍTULO TRADUZIDO","link":"URL ORIGINAL","imagem":"URL IMAGEM OU VAZIO","fonte":"NOME DA FONTE","categoria":"CATEGORIA","resumo":"2 FRASES DE RESUMO"}]\n\n' +
-    "IMPORTANTE: preserve os links e imagens exatamente como estão na lista original.";
+    "3. OBRIGATÓRIO: traduza o campo 'titulo' para português brasileiro — NUNCA deixe em inglês.\n" +
+    "4. OBRIGATÓRIO: escreva o campo 'resumo' em português brasileiro — 2 frases objetivas explicando o que é e por que importa.\n\n" +
+    "Retorne SOMENTE um array JSON válido, sem markdown, sem ```json, sem explicações:\n" +
+    '[{"titulo":"TÍTULO EM PORTUGUÊS","link":"URL ORIGINAL EXATA","imagem":"URL IMAGEM EXATA OU STRING VAZIA","fonte":"NOME DA FONTE ORIGINAL","categoria":"CATEGORIA ORIGINAL","resumo":"RESUMO EM PORTUGUÊS BRASILEIRO"}]\n\n' +
+    "CRÍTICO: preserve links e imagens EXATAMENTE como estão na lista — não invente, não altere, não encurte URLs.";
 
   var payload = {
     contents: [{ parts: [{ text: prompt }] }],
