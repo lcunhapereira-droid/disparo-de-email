@@ -1,12 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 260" width="600" height="260">
-  <rect width="600" height="260" fill="#000000"/>
-  <!-- Triângulo dourado -->
-  <polygon points="300,30 430,170 170,170" fill="none" stroke="#C9A462" stroke-width="6"/>
-  <!-- Linha base do triângulo (abertura) -->
-  <line x1="200" y1="170" x2="252" y2="170" stroke="#000000" stroke-width="8"/>
-  <line x1="348" y1="170" x2="400" y2="170" stroke="#000000" stroke-width="8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- Fundo transparente -->
+  <!-- Triângulo dourado com abertura na base -->
+  <polygon points="250,100 390,310 110,310" fill="none" stroke="#C9A462" stroke-width="8"/>
+  <!-- Apaga trecho central da base (abertura) -->
+  <line x1="145" y1="310" x2="210" y2="310" stroke="white" stroke-width="12"/>
+  <line x1="290" y1="310" x2="355" y2="310" stroke="white" stroke-width="12"/>
   <!-- Texto VÉRTICE -->
-  <text x="300" y="215" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="52" font-weight="200" fill="#FFFFFF" text-anchor="middle" letter-spacing="18">VÉRTICE</text>
+  <text x="250" y="390" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="52" font-weight="200" fill="#1a1a1a" text-anchor="middle" letter-spacing="14">VÉRTICE</text>
   <!-- Subtítulo -->
-  <text x="300" y="242" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="300" fill="#888888" text-anchor="middle" letter-spacing="8">CONSULTORIA ESTRATÉGICA</text>
+  <text x="250" y="420" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="13" font-weight="300" fill="#888888" text-anchor="middle" letter-spacing="6">CONSULTORIA ESTRATÉGICA</text>
 </svg>
