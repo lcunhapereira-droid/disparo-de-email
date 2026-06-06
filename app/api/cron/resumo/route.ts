@@ -49,7 +49,7 @@ async function processarComGemini(noticias: Noticia[], apiKey: string): Promise<
 
 function montarEmailHTML(conteudo: string): string {
   const { identidade, visual } = CONFIG;
-  const logoUrl = "https://raw.githubusercontent.com/lcunhapereira-droid/disparo-de-email/main/public/logo-vertice-dark.png";
+  const logoUrl = "https://raw.githubusercontent.com/lcunhapereira-droid/luminous-melhor-versao/main/public/logo-vertice-dark.png";
   const dataHoje = new Date().toLocaleDateString("pt-BR", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "America/Sao_Paulo" });
   const edicao = `Edição ${new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" })}`;
 
