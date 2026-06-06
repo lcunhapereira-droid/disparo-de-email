@@ -2,7 +2,7 @@
 // Newsletter: Inteligência Artificial — Modelos, Agentes & Ferramentas
 // Para ativar: execute a função setup() uma única vez
 
-var GEMINI_API_KEY = "AIzaSyAb8RN6I7oob-UWX_ahMhc6PXLEGtSiDFEetCI928RIaeGJRyOw";
+var GEMINI_API_KEY = "AIzaSyCzfeYjLd-DXud6sYo9gf9bFe6mhW9FEHk";
 var GMAIL_REMETENTE = "lcunhapereira@gmail.com";
 
 var CONFIG = {
